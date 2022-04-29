@@ -1,5 +1,23 @@
 # Time Series Library
 
+## Just wan't to try it?
+
+Compile:
+```bash
+$ tsc
+```
+
+Run tests:
+```bash
+$ npm test
+```
+
+See how to use the code? Take a look in the [unit test file](./test/time-series-path-test.js) (even though it is quite abstract)
+
+If you like it: Call me. You have my number.
+
+If you hate it: Call me.
+
 ## Why do we need a time series library?
 
 Believe it or not, a lot of software is struggling with processing time series data correctly. The lack of good libraries results in every software application trying to implement its own version of time series processing. 
@@ -92,7 +110,7 @@ testPeriod3 = testPeriod1.add(testPeriod2); // Add testPeriod1 and testPeriod2. 
 
 The approach allows chaining for people who count the number of lines of code
 ```js
-resultPeriod = testPeriod1.setTimeVector(...).resample(...).add(testPeriod2).divide(testPeriod3).rateOfChange(...);
+resultPeriod = testPeriod1.setTimeVector(...).resample(...).add(testPeriod2).divide(testPeriod3.subtract(testPeriod2));
 ```
 
 ## The "roadmap"

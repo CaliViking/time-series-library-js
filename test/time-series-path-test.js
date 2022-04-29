@@ -1,10 +1,10 @@
 import { equal, deepEqual, notDeepEqual } from 'assert';
-import { TimeSeries } from '../dist/time-series-vector.js';
+import { TimeSeriesPath } from '../dist/time-series-path.js';
 
-describe('time-series-period', function () {
-  describe('TimeSeries("number", "linear")', function () {
+describe('time-series-path', function () {
+  describe('TimeSeriesPath("number", "linear")', function () {
     describe('construct', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       it('should return number for dataType', function () {
         equal(testPeriod.dataType, "number");
       });
@@ -13,35 +13,39 @@ describe('time-series-period', function () {
       });
     });
     describe('validate()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       it('should return true for validate()', function () {
         equal(testPeriod.validate(), true);
       });
     });
     describe('clone()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       it('should clone', function () {
         deepEqual(testPeriod.clone(), testPeriod);
       });
     });
     describe('not clone()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       let testPeriod2 = testPeriod.clone();
-      testPeriod2.dataType = 'string';
+      before( function () {
+        testPeriod2.dataType = 'string';
+      })
       it('is not a clone', function () {
         notDeepEqual(testPeriod2, testPeriod);
       });
-    });
+  });
     describe('deepClone()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       it('should deepClone', function () {
         deepEqual(testPeriod.deepClone(), testPeriod);
       });
     });
     describe('setTimeVector()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       let arrayLength = 100000;
-      testPeriod.setTimeVector(Array.from(Array(arrayLength).keys()), Array.from(Array(arrayLength).keys()), Array.from({length: arrayLength}, (_v, _k) => 0))
+      before( function () {
+        testPeriod.setTimeVector(Array.from(Array(arrayLength).keys()), Array.from(Array(arrayLength).keys()), Array.from({length: arrayLength}, (_v, _k) => 0));
+      });
       it(`should have ${arrayLength} time entries after running setTimeVector`, function () {
         equal(testPeriod.timestamps.length, arrayLength);
       });
@@ -50,7 +54,7 @@ describe('time-series-period', function () {
       });
     });
     describe('getTimeEntries()', function () {
-      let testPeriod = new TimeSeries("number", "linear");
+      let testPeriod = new TimeSeriesPath("number", "linear");
       let arrayLength = 100000;
       let testLocation = 1000;
       let timeEntries;
@@ -79,7 +83,7 @@ describe('time-series-period', function () {
       });
     });
     describe('resample()', function () {
-      let testPeriod1 = new TimeSeries("number", "linear");
+      let testPeriod1 = new TimeSeriesPath("number", "linear");
       let arrayLength = 10000;
       let testPeriod2, testPeriod3;
 
@@ -98,7 +102,7 @@ describe('time-series-period', function () {
     describe('add()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -124,7 +128,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -151,7 +155,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar string', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -178,7 +182,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar boolean', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -207,7 +211,7 @@ describe('time-series-period', function () {
     describe('subtract()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -233,7 +237,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -260,7 +264,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar string', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -290,7 +294,7 @@ describe('time-series-period', function () {
     describe('multiply()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -307,7 +311,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -328,7 +332,7 @@ describe('time-series-period', function () {
     describe('divide()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -345,7 +349,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -366,7 +370,7 @@ describe('time-series-period', function () {
     describe('pow()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -383,7 +387,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -404,7 +408,7 @@ describe('time-series-period', function () {
     describe('remainder()', function () {
 
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -421,7 +425,7 @@ describe('time-series-period', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeries("number", "linear");
+        let testPeriod1 = new TimeSeriesPath("number", "linear");
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -441,7 +445,7 @@ describe('time-series-period', function () {
     });
     describe('negate()', function () {
 
-      let testPeriod1 = new TimeSeries("number", "linear");
+      let testPeriod1 = new TimeSeriesPath("number", "linear");
       let arrayLength = 10000;
       let testLocation = 100;
       let testPeriod2;
@@ -458,7 +462,7 @@ describe('time-series-period', function () {
     });
     describe('aggregation', function () {
 
-      let testPeriod1 = new TimeSeries("number", "linear");
+      let testPeriod1 = new TimeSeriesPath("number", "linear");
       let arrayLength = 10000;
       let testLocation = 100;
       let testPeriod2, testPeriod3;
@@ -473,19 +477,19 @@ describe('time-series-period', function () {
       });
 
       it(`should have sum value ${testLocation * 3} in location ${testLocation}`, function () {
-        equal(TimeSeries.sum(testPeriods).values[testLocation], testLocation * 3);
+        equal(TimeSeriesPath.sum(testPeriods).values[testLocation], testLocation * 3);
       });
       it(`should have avg value ${testLocation} in location ${testLocation}`, function () {
-        equal(TimeSeries.avg(testPeriods).values[testLocation], testLocation);
+        equal(TimeSeriesPath.avg(testPeriods).values[testLocation], testLocation);
       });
       it(`should have min value ${testLocation - 2} in location ${testLocation}`, function () {
-        equal(TimeSeries.min(testPeriods).values[testLocation], testLocation - 2);
+        equal(TimeSeriesPath.min(testPeriods).values[testLocation], testLocation - 2);
       });
       it(`should have max value ${testLocation + 2} in location ${testLocation}`, function () {
-        equal(TimeSeries.max(testPeriods).values[testLocation], testLocation + 2);
+        equal(TimeSeriesPath.max(testPeriods).values[testLocation], testLocation + 2);
       });
       it(`should have range value ${4} in location ${testLocation}`, function () {
-        equal(TimeSeries.range(testPeriods).values[testLocation], 4);
+        equal(TimeSeriesPath.range(testPeriods).values[testLocation], 4);
       });
 
 

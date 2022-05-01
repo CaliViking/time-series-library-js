@@ -14,7 +14,7 @@ $ npm test
 
 See how to use the code? Take a look in the [unit test file](./test/time-series-path-test.js) (even though it is quite abstract)
 
-If you like it: Call me. You have my number.
+If you like it: Call me.
 
 If you hate it: Call me.
 

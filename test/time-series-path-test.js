@@ -1,5 +1,5 @@
 import { equal, deepEqual, notDeepEqual } from 'assert';
-import { TimeSeriesPath } from '../dist/time-series-path.js';
+import { TimeSeriesPath } from '../lib/time-series-path.js';
 
 describe('time-series-path', function () {
   describe('TimeSeriesPath("number", "linear")', function () {

@@ -1,6 +1,5 @@
-import { Value } from "./values";
 export declare type TimeEntry = {
     t: DOMHighResTimeStamp;
-    v: Value;
+    v: unknown;
     s: number;
 };

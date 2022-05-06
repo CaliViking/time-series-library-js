@@ -1,24 +1,16 @@
-import { InterpolationMethod } from "./interpolationmethod";
+import { InterpolationMethod } from "./interpolation-method";
 import { DataType } from "./datatype";
 import { Values } from "./values";
 import { TimeEntry } from "./time-entry";
 import { TimeSegment } from "./time-segment";
-export interface Samplable {
-    /**
-     * resampleable
-     * */
+interface Samplable {
     mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
 }
-/**
- * Some implementation choices:
- * - I have deliberately chosen to use for loops instead of forEach and map/reduce. The reason is primarily performance
- * - I have chosen to use array.push() method to extend arrays. This is due to Google V8 performance. It may be a good idea to use pre-sized arrays instead.
- */
 export declare class TimeSeriesPath implements Samplable {
     dataType: DataType;
     interpolationMethod: InterpolationMethod;
     timestamps: DOMHighResTimeStamp[];
-    values: any[];
+    values: unknown[];
     statuses: number[];
     startTimestamp?: DOMHighResTimeStamp;
     endTimestamp?: DOMHighResTimeStamp;
@@ -31,20 +23,6 @@ export declare class TimeSeriesPath implements Samplable {
     expression?: string;
     error?: Error;
     hint?: string;
-    /**
-     *
-     * @param dataType
-     * @param interpolationMethod
-     * @param startTimestamp
-     * @param endTimestamp
-     * @param quantityKind
-     * @param measurementUnit
-     * @param measurementUnitMultiplier
-     * @param measurementUnitOffset
-     * @param name
-     * @param description
-     * @param expression
-     */
     constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: DOMHighResTimeStamp, endTimestamp?: DOMHighResTimeStamp, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
     validate(): boolean;
     clone(): TimeSeriesPath;
@@ -64,13 +42,13 @@ export declare class TimeSeriesPath implements Samplable {
     private operator;
     private operatorScalar;
     private operatorTS;
-    add(arg: any): TimeSeriesPath;
-    subtract(arg: any): TimeSeriesPath;
-    multiply(arg: any): TimeSeriesPath;
-    divide(arg: any): TimeSeriesPath;
-    pow(arg: any): TimeSeriesPath;
-    remainder(arg: any): TimeSeriesPath;
-    lt(arg: any): TimeSeriesPath;
+    add(arg: unknown): TimeSeriesPath;
+    subtract(arg: unknown): TimeSeriesPath;
+    multiply(arg: unknown): TimeSeriesPath;
+    divide(arg: unknown): TimeSeriesPath;
+    pow(arg: unknown): TimeSeriesPath;
+    remainder(arg: unknown): TimeSeriesPath;
+    lt(arg: unknown): TimeSeriesPath;
     negate(): TimeSeriesPath;
     private static aggregate;
     static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
@@ -79,3 +57,4 @@ export declare class TimeSeriesPath implements Samplable {
     static max(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
     static range(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
 }
+export {};

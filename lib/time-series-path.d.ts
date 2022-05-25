@@ -1,8 +1,8 @@
-import { InterpolationMethod } from "./interpolation-method";
-import { DataType } from "./datatype";
-import { Values } from "./values";
-import { TimeEntry } from "./time-entry";
-import { TimeSegment } from "./time-segment";
+import { InterpolationMethod } from './interpolation-method';
+import { DataType } from './datatype';
+import { Values } from './values';
+import { TimeEntry } from './time-entry';
+import { TimeSegment } from './time-segment';
 interface Samplable {
     mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
 }

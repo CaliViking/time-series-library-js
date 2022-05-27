@@ -5,6 +5,7 @@
   "version": "0.1.8",
   "main": "./lib/index.js",
   "license": "CC-BY-NC-4.0",
+  "browser": "./browser/bundle.js",
   "devDependencies": {
     "@types/node": "^17.0.25",
     "@typescript-eslint/eslint-plugin": "^5.22.0",

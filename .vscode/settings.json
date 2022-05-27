@@ -1,24 +1,18 @@
 {
-    "terminal.integrated.profiles.windows": {
-    
-        "PowerShell": {
-            "source": "PowerShell",
-            "icon": "terminal-powershell"
-        },
-        "Command Prompt": {
-            "path": [
-                "${env:windir}\\Sysnative\\cmd.exe",
-                "${env:windir}\\System32\\cmd.exe"
-            ],
-            "args": [],
-            "icon": "terminal-cmd"
-        },
-        "Git Bash": {
-            "source": "Git Bash"
-        }
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
     },
-    "cSpell.words": [
-        "Niels",
-        "roadmap"
-    ]
+    "Command Prompt": {
+      "path": ["${env:windir}\\Sysnative\\cmd.exe", "${env:windir}\\System32\\cmd.exe"],
+      "args": [],
+      "icon": "terminal-cmd"
+    },
+    "Git Bash": {
+      "source": "Git Bash"
+    }
+  },
+  "cSpell.words": ["Niels", "roadmap"],
+  "liveServer.settings.port": 5501
 }

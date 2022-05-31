@@ -23,8 +23,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "npx tsc",
-    "test": "mocha",
-    "publish": "npm version patch && npm publish"
+    "test": "mocha"
   },
   "keywords": [
     "time series",

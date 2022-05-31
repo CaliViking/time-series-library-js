@@ -1,7 +1,21 @@
 import { equal, deepEqual, notDeepEqual } from 'assert';
 import { TimeSeriesPath } from '../lib/index.js';
+import { StatusType } from '../lib/status-type.js';
 
 describe('time-series-path', function () {
+  describe('StatusType', function () {
+    describe('order test', function () {
+      it('Good should be less than Uncertain', function () {
+        equal(StatusType.Good < StatusType.Uncertain, true);
+      });
+      it('Uncertain should be less than Bad', function () {
+        equal(StatusType.Uncertain < StatusType.Bad, true);
+      });
+      it('Good should be less than Bad', function () {
+        equal(StatusType.Good < StatusType.Bad, true);
+      });
+    });
+  });
   describe('TimeSeriesPath("number", "linear")', function () {
     describe('construct', function () {
       let testPeriod = new TimeSeriesPath('number', 'linear');

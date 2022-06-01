@@ -54,6 +54,44 @@ describe('time-series-path', function () {
         deepEqual(testPeriod.deepClone(), testPeriod);
       });
     });
+    describe('SetTimeEntries()', function () {
+      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let timeEntries = [
+        { t: new Date('2022-01-01 00:00:00.000+00'), v: 100, s: StatusType.Good },
+        { t: new Date('2022-01-01 00:00:01.000+00'), v: 101, s: StatusType.Uncertain },
+      ];
+      before(function () {
+        testPeriod.setTimeEntries(timeEntries);
+      });
+      it(`should have 2 time entries after running SetTimeEntries()`, function () {
+        equal(testPeriod.timestamps.length, 2);
+      });
+      it('should pass validate after running SetTimeEntries()', function () {
+        equal(testPeriod.validate(), true);
+      });
+      it('Status should be StatusType.Uncertain after running SetTimeEntries()', function () {
+        equal(testPeriod.statuses[1], StatusType.Uncertain);
+      });
+    });
+    describe('SetTimeEntries() without statuses', function () {
+      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let timeEntries = [
+        { t: new Date('2022-01-01 00:00:00.000+00'), v: 100 },
+        { t: new Date('2022-01-01 00:00:01.000+00'), v: 101 },
+      ];
+      before(function () {
+        testPeriod.setTimeEntries(timeEntries);
+      });
+      it(`should have 2 time entries after running SetTimeEntries() without statuses`, function () {
+        equal(testPeriod.statuses.length, 2);
+      });
+      it('should pass validate after running SetTimeEntries() without statuses', function () {
+        equal(testPeriod.validate(), true);
+      });
+      it('Status should be StatusType.Good after running SetTimeEntries() without statuses', function () {
+        equal(testPeriod.statuses[1], StatusType.Good);
+      });
+    });
     describe('setTimeVector()', function () {
       let testPeriod = new TimeSeriesPath('number', 'linear');
       let arrayLength = 100000;
@@ -61,13 +99,29 @@ describe('time-series-path', function () {
         testPeriod.setTimeVector(
           Array.from(Array(arrayLength).keys()),
           Array.from(Array(arrayLength).keys()),
-          Array.from({ length: arrayLength }, (_v, _k) => 0)
+          Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
         );
       });
       it(`should have ${arrayLength} time entries after running setTimeVector`, function () {
         equal(testPeriod.timestamps.length, arrayLength);
       });
       it('should pass validate after running setTimeVector()', function () {
+        equal(testPeriod.validate(), true);
+      });
+    });
+    describe('setTimeVector() with no statuses', function () {
+      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let arrayLength = 100000;
+      before(function () {
+        testPeriod.setTimeVector(
+          Array.from(Array(arrayLength).keys()),
+          Array.from(Array(arrayLength).keys())
+        );
+      });
+      it(`should have ${arrayLength} time entries after running setTimeVector() with no statuses`, function () {
+        equal(testPeriod.timestamps.length, arrayLength);
+      });
+      it('should pass validate after running setTimeVector() with no statuses', function () {
         equal(testPeriod.validate(), true);
       });
     });
@@ -79,7 +133,7 @@ describe('time-series-path', function () {
       testPeriod.setTimeVector(
         Array.from(Array(arrayLength).keys()),
         Array.from(Array(arrayLength).keys()),
-        Array.from({ length: arrayLength }, (_v, _k) => 0)
+        Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
       );
       timeEntries = testPeriod.getTimeEntries();
       it(`should have ${arrayLength} time entries after running getTimeEntries()`, function () {
@@ -112,7 +166,7 @@ describe('time-series-path', function () {
       testPeriod1.setTimeVector(
         Array.from(Array(arrayLength).keys()),
         Array.from(Array(arrayLength).keys()),
-        Array.from({ length: arrayLength }, (_v, _k) => 0)
+        Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
       );
       testPeriod2 = testPeriod1.resample(Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2));
 
@@ -135,7 +189,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -174,7 +228,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -215,7 +269,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -256,7 +310,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -297,7 +351,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -334,7 +388,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -375,7 +429,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -416,7 +470,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -442,7 +496,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -468,7 +522,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -492,7 +546,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -518,7 +572,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -544,7 +598,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -570,7 +624,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -596,7 +650,7 @@ describe('time-series-path', function () {
           testPeriod1.setTimeVector(
             Array.from(Array(arrayLength).keys()),
             Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => 0)
+            Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
           );
           testPeriod2 = testPeriod1.resample(
             Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2)
@@ -621,7 +675,7 @@ describe('time-series-path', function () {
         testPeriod1.setTimeVector(
           Array.from(Array(arrayLength).keys()),
           Array.from(Array(arrayLength).keys()),
-          Array.from({ length: arrayLength }, (_v, _k) => 0)
+          Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
         );
         testPeriod2 = testPeriod1.negate(testPeriod1);
       });
@@ -641,7 +695,7 @@ describe('time-series-path', function () {
         testPeriod1.setTimeVector(
           Array.from(Array(arrayLength).keys()),
           Array.from(Array(arrayLength).keys()),
-          Array.from({ length: arrayLength }, (_v, _k) => 0)
+          Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
         );
         testPeriod2 = testPeriod1.subtract(2);
         testPeriod3 = testPeriod1.add(2);

@@ -19,9 +19,9 @@ interface Samplable {
   /*
    * resampleable
    */
-  mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
-  // downsample(targetTimestamps: DOMHighResTimeStamp[]): this;
-  // upsample(targetTimestamps: DOMHighResTimeStamp[]): this;
+  mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
+  // downsample(targetTimestamps: Date[]): this;
+  // upsample(targetTimestamps: Date[]): this;
 }
 
 /*
@@ -33,11 +33,11 @@ interface Samplable {
 export class TimeSeriesPath implements Samplable {
   dataType: DataType;
   interpolationMethod: InterpolationMethod;
-  timestamps: DOMHighResTimeStamp[] = [];
+  timestamps: Date[] = [];
   values: unknown[] = [];
   statuses: StatusType[] = [];
-  startTimestamp?: DOMHighResTimeStamp;
-  endTimestamp?: DOMHighResTimeStamp;
+  startTimestamp?: Date;
+  endTimestamp?: Date;
   quantityKind?: string;
   measurementUnit?: string;
   measurementUnitMultiplier?: number;
@@ -51,8 +51,8 @@ export class TimeSeriesPath implements Samplable {
   public constructor(
     dataType: DataType,
     interpolationMethod: InterpolationMethod,
-    startTimestamp?: DOMHighResTimeStamp,
-    endTimestamp?: DOMHighResTimeStamp,
+    startTimestamp?: Date,
+    endTimestamp?: Date,
     quantityKind?: string,
     measurementUnit?: string,
     measurementUnitMultiplier?: number,
@@ -75,7 +75,7 @@ export class TimeSeriesPath implements Samplable {
 
     switch (this.dataType) {
       case 'Date': {
-        this.values = Array<DOMHighResTimeStamp>();
+        this.values = Array<Date>();
         break;
       }
       case 'string': {
@@ -144,19 +144,19 @@ export class TimeSeriesPath implements Samplable {
   }
 
   public setTimeVector(
-    timestamps: DOMHighResTimeStamp[],
+    timestamps: Date[],
     values: Values,
-    statuses: StatusType[]
+    statuses?: StatusType[]
   ): TimeSeriesPath {
     this.timestamps = timestamps;
     this.values = values;
-    this.statuses = statuses;
+    this.statuses = statuses ?? new Array(timestamps.length).fill(StatusType.Good);
 
     return this;
   }
 
   public setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath {
-    const timestamps: DOMHighResTimeStamp[] = [];
+    const timestamps: Date[] = [];
     let values: unknown[];
     const statuses: StatusType[] = [];
 
@@ -164,7 +164,7 @@ export class TimeSeriesPath implements Samplable {
       this.dataType // TODO: Is this necessary?
     ) {
       case 'Date': {
-        values = Array<DOMHighResTimeStamp>();
+        values = Array<Date>();
         break;
       }
       case 'string': {
@@ -187,7 +187,7 @@ export class TimeSeriesPath implements Samplable {
     for (const timeEntry of timeEntries) {
       timestamps.push(timeEntry.t);
       values.push(timeEntry.v);
-      statuses.push(timeEntry.s);
+      statuses.push(timeEntry.s ?? StatusType.Good);
     }
 
     this.timestamps = timestamps;
@@ -208,7 +208,7 @@ export class TimeSeriesPath implements Samplable {
   }
 
   public setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath {
-    const timestamps: DOMHighResTimeStamp[] = [];
+    const timestamps: Date[] = [];
     let values: unknown[];
     const statuses: StatusType[] = [];
 
@@ -216,7 +216,7 @@ export class TimeSeriesPath implements Samplable {
       this.dataType // TODO: Is this necessary?
     ) {
       case 'Date': {
-        values = Array<DOMHighResTimeStamp>();
+        values = Array<Date>();
         break;
       }
       case 'string': {
@@ -271,7 +271,7 @@ export class TimeSeriesPath implements Samplable {
     return timeSegments;
   }
 
-  private _resampleNone(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath {
+  private _resampleNone(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
     const targetStatuses: StatusType[] = [];
@@ -313,7 +313,7 @@ export class TimeSeriesPath implements Samplable {
     return returnTimeSeriesPeriod;
   }
 
-  private _resamplePrevious(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath {
+  private _resamplePrevious(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
     const targetStatuses: StatusType[] = [];
@@ -358,7 +358,7 @@ export class TimeSeriesPath implements Samplable {
     return returnTimeSeriesPeriod;
   }
 
-  private _resampleNext(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath {
+  private _resampleNext(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
     const targetStatuses: StatusType[] = [];
@@ -419,7 +419,7 @@ export class TimeSeriesPath implements Samplable {
     }
   }
 
-  protected _resampleLinear(targetTimestamps: number[]): TimeSeriesPath {
+  protected _resampleLinear(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
     const targetStatuses: StatusType[] = [];
@@ -462,8 +462,10 @@ export class TimeSeriesPath implements Samplable {
             (this.values[indexObjectTs] as number) +
               (((this.values[indexObjectTs + 1] as number) -
                 (this.values[indexObjectTs] as number)) *
-                (targetTimestamps[indexTargetTs] - this.timestamps[indexObjectTs])) /
-                (this.timestamps[indexObjectTs + 1] - this.timestamps[indexObjectTs])
+                (targetTimestamps[indexTargetTs].valueOf() -
+                  this.timestamps[indexObjectTs].valueOf())) /
+                (this.timestamps[indexObjectTs + 1].valueOf() -
+                  this.timestamps[indexObjectTs].valueOf())
           );
           targetStatuses.push(
             this.statuses[indexObjectTs] > this.statuses[indexObjectTs + 1]
@@ -486,7 +488,7 @@ export class TimeSeriesPath implements Samplable {
     return returnTimeSeriesPeriod;
   }
 
-  public mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath {
+  public mutableResample(targetTimestamps: Date[]): TimeSeriesPath {
     switch (this.interpolationMethod) {
       case 'none': {
         return this._resampleNone(targetTimestamps);
@@ -503,7 +505,7 @@ export class TimeSeriesPath implements Samplable {
     }
   }
 
-  public resample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath {
+  public resample(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod: TimeSeriesPath = this.deepClone();
 
     switch (this.interpolationMethod) {
@@ -616,8 +618,8 @@ export class TimeSeriesPath implements Samplable {
 
   private operatorTS(operator: string, arg: TimeSeriesPath): TimeSeriesPath {
     // Create a unique array of all the timestamps
-    const targetTimestamps: DOMHighResTimeStamp[] = [
-      ...new Set(this.timestamps.concat(arg.timestamps).sort((a, b) => a - b)),
+    const targetTimestamps: Date[] = [
+      ...new Set(this.timestamps.concat(arg.timestamps).sort((a, b) => a.valueOf() - b.valueOf())),
     ];
     const targetValues: unknown[] = [];
     const targetStatuses: StatusType[] = [];
@@ -754,8 +756,8 @@ export class TimeSeriesPath implements Samplable {
   // Ideally this would be aware of interpolation so that it would use an iterated object of segments, or double segments
 
   //   private static generateCyclicTimeSeriesData(
-  //     startTimestamp: DOMHighResTimeStamp,
-  //     endTimestamp: DOMHighResTimeStamp,
+  //     startTimestamp: Date,
+  //     endTimestamp: Date,
   //     sampleInterval: number,
   //     shape: 'sine' | 'square' | 'sawtooth' | 'triangle',
   //     waveLength: number,
@@ -764,7 +766,7 @@ export class TimeSeriesPath implements Samplable {
   //   ): TimeSeriesPath {
   //     // Create an array with all the timestamps
   //     const numEntries: number = Math.floor((endTimestamp - startTimestamp) / sampleInterval);
-  //     const targetTimestamps: DOMHighResTimeStamp[] = Array.from(Array(numEntries).keys()).map(
+  //     const targetTimestamps: Date[] = Array.from(Array(numEntries).keys()).map(
   //       (index) => index * sampleInterval + startTimestamp
   //     );
   //     let targetValues: number[] = Array(numEntries);
@@ -785,7 +787,7 @@ export class TimeSeriesPath implements Samplable {
   //   }
 
   private static aggregate(method: string, timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath {
-    let targetTimestamps: DOMHighResTimeStamp[] = [];
+    let targetTimestamps: Date[] = [];
     const targetValues: number[] = [];
     const targetStatuses: StatusType[] = [];
     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
@@ -797,7 +799,7 @@ export class TimeSeriesPath implements Samplable {
     }
 
     // Sort and remove the duplicates
-    targetTimestamps = [...new Set(targetTimestamps.sort((a, b) => a - b))];
+    targetTimestamps = [...new Set(targetTimestamps.sort((a, b) => a.valueOf() - b.valueOf()))];
 
     // Resample
     for (const timeSeriesPeriod of timeSeriesPeriods) {
@@ -930,15 +932,15 @@ export class TimeSeriesPath implements Samplable {
   }
 
   /*
-    public upsample(interval: number | timeSeriesObject | DOMHighResTimeStamp[] | Date[], anchorTimestamp?: DOMHighResTimeStamp | Date): timeSeriesObject {
+    public upsample(interval: number | timeSeriesObject | Date[] | Date[], anchorTimestamp?: Date | Date): timeSeriesObject {
         return new timeSeriesObject;
     }
 
-    public downsample(interval: number | timeSeriesObject | DOMHighResTimeStamp[] | Date[], anchorTimestamp?: DOMHighResTimeStamp | Date): timeSeriesObject {
+    public downsample(interval: number | timeSeriesObject | Date[] | Date[], anchorTimestamp?: Date | Date): timeSeriesObject {
         return new timeSeriesObject;
     }
 
-    public aggregate(interval: number | timeSeriesObject | DOMHighResTimeStamp[] | Date[], anchorTimestamp?: DOMHighResTimeStamp | Date): timeSeriesObject {
+    public aggregate(interval: number | timeSeriesObject | Date[] | Date[], anchorTimestamp?: Date | Date): timeSeriesObject {
         return new timeSeriesObject;
     }
 

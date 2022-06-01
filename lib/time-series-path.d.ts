@@ -5,16 +5,16 @@ import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { StatusType } from './status-type.js';
 interface Samplable {
-    mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
+    mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
 }
 export declare class TimeSeriesPath implements Samplable {
     dataType: DataType;
     interpolationMethod: InterpolationMethod;
-    timestamps: DOMHighResTimeStamp[];
+    timestamps: Date[];
     values: unknown[];
     statuses: StatusType[];
-    startTimestamp?: DOMHighResTimeStamp;
-    endTimestamp?: DOMHighResTimeStamp;
+    startTimestamp?: Date;
+    endTimestamp?: Date;
     quantityKind?: string;
     measurementUnit?: string;
     measurementUnitMultiplier?: number;
@@ -24,11 +24,11 @@ export declare class TimeSeriesPath implements Samplable {
     expression?: string;
     error?: Error;
     hint?: string;
-    constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: DOMHighResTimeStamp, endTimestamp?: DOMHighResTimeStamp, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
+    constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: Date, endTimestamp?: Date, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
     validate(): boolean;
     clone(): TimeSeriesPath;
     deepClone(): TimeSeriesPath;
-    setTimeVector(timestamps: DOMHighResTimeStamp[], values: Values, statuses: StatusType[]): TimeSeriesPath;
+    setTimeVector(timestamps: Date[], values: Values, statuses?: StatusType[]): TimeSeriesPath;
     setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath;
     getTimeEntries(): TimeEntry[];
     setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath;
@@ -37,9 +37,9 @@ export declare class TimeSeriesPath implements Samplable {
     private _resamplePrevious;
     private _resampleNext;
     private _setResampleValue;
-    protected _resampleLinear(targetTimestamps: number[]): TimeSeriesPath;
-    mutableResample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
-    resample(targetTimestamps: DOMHighResTimeStamp[]): TimeSeriesPath;
+    protected _resampleLinear(targetTimestamps: Date[]): TimeSeriesPath;
+    mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
+    resample(targetTimestamps: Date[]): TimeSeriesPath;
     private operator;
     private operatorScalar;
     private operatorTS;

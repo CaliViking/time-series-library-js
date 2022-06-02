@@ -16,7 +16,7 @@ describe('time-series-path', function () {
       });
     });
   });
-  describe('TimeSeriesPath("number", "linear")', function () {
+  describe('TimeSeriesPath', function () {
     describe('construct', function () {
       let testPeriod = new TimeSeriesPath('number', 'linear');
       it('should return number for dataType', function () {
@@ -158,24 +158,125 @@ describe('time-series-path', function () {
         equal(timeEntries[testLocation].s, 0);
       });
     });
-    describe('resample()', function () {
+    describe('resample() linear', function () {
       let testPeriod1 = new TimeSeriesPath('number', 'linear');
       let arrayLength = 10000;
       let testPeriod2, testPeriod3;
 
+      const originalTimestamps = Array.from(Array(arrayLength).keys()).map((v) => v * 4);
+      const originalValues = Array.from(Array(arrayLength).keys());
+      const resampleTimestamps = Array.from(Array(arrayLength * 4).keys());
+      // Resample to 4 times the original frequency
+      const expectedResampleValues = Array.from(Array(arrayLength * 4).keys()).map(
+        (v) => (v <= (arrayLength - 1) * 4 ? v * 0.25 : null) // The last values are outside the original array, therefore they are NULL
+      );
+
       testPeriod1.setTimeVector(
-        Array.from(Array(arrayLength).keys()),
-        Array.from(Array(arrayLength).keys()),
+        originalTimestamps,
+        originalValues,
         Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
       );
-      testPeriod2 = testPeriod1.resample(Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2));
 
-      it(`should have ${arrayLength * 2} time entries after running resample()`, function () {
-        equal(testPeriod2.values.length, arrayLength * 2);
+      testPeriod2 = testPeriod1.resample(resampleTimestamps);
+
+      it(`should have expected members after resampling`, function () {
+        equal(JSON.stringify(testPeriod2.values), JSON.stringify(expectedResampleValues)); // Test member equality, not array object equality
       });
 
       it(`should be immutable to resample`, function () {
-        equal(testPeriod1.values.length, arrayLength);
+        equal(JSON.stringify(testPeriod1.values), JSON.stringify(originalValues));
+      });
+    });
+    describe('resample() previous', function () {
+      let testPeriod1 = new TimeSeriesPath('number', 'previous');
+      let arrayLength = 5;
+      let testPeriod2, testPeriod3;
+
+      const originalTimestamps = Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1);
+      const originalValues = Array.from(Array(arrayLength).keys());
+      const resampleTimestamps = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v); // Make sure the timestamps are outside the original array
+      // Resample to 4 times the original frequency
+      const expectedResampleValues = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
+        v >= 1 && v <= arrayLength * 4
+          ? Math.floor((v - 1) / 4.0) // Need to subtract 1 to match the original time-value pairs.
+          : v > arrayLength * 4
+          ? arrayLength - 1
+          : null
+      );
+      testPeriod1.setTimeVector(
+        originalTimestamps,
+        originalValues,
+        Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
+      );
+
+      testPeriod2 = testPeriod1.resample(resampleTimestamps);
+
+      it(`should have expected members after resampling`, function () {
+        equal(JSON.stringify(testPeriod2.values), JSON.stringify(expectedResampleValues));
+      });
+
+      it(`should be immutable to resample`, function () {
+        equal(JSON.stringify(testPeriod1.values), JSON.stringify(originalValues));
+      });
+    });
+    describe('resample() next', function () {
+      let testPeriod1 = new TimeSeriesPath('number', 'next');
+      let arrayLength = 5;
+      let testPeriod2, testPeriod3;
+
+      const originalTimestamps = Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1);
+      const originalValues = Array.from(Array(arrayLength).keys());
+      const resampleTimestamps = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v); // Make sure the timestamps are outside the original array
+      // Resample to 4 times the original frequency
+      const expectedResampleValues = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
+        v >= 1 && v <= (arrayLength - 1) * 4 + 1
+          ? Math.ceil((v - 1) / 4.0) // Need to subtract 1 to match the original time-value pairs.
+          : v < 1
+          ? 0
+          : null
+      );
+      testPeriod1.setTimeVector(
+        originalTimestamps,
+        originalValues,
+        Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
+      );
+
+      testPeriod2 = testPeriod1.resample(resampleTimestamps);
+
+      it(`should have expected members after resampling`, function () {
+        equal(JSON.stringify(testPeriod2.values), JSON.stringify(expectedResampleValues));
+      });
+
+      it(`should be immutable to resample`, function () {
+        equal(JSON.stringify(testPeriod1.values), JSON.stringify(originalValues));
+      });
+    });
+    describe('resample() none', function () {
+      let testPeriod1 = new TimeSeriesPath('number', 'none');
+      let arrayLength = 5;
+      let testPeriod2, testPeriod3;
+
+      const originalTimestamps = Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1);
+      const originalValues = Array.from(Array(arrayLength).keys());
+      const resampleTimestamps = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v); // Make sure the timestamps are outside the original array
+      // Resample to 4 times the original frequency
+      const expectedResampleValues = Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
+        v >= 1 && v <= (arrayLength - 1) * 4 + 1 ? ((v - 1) % 4 === 0 ? (v - 1) / 4 : null) : null
+      );
+      testPeriod1.setTimeVector(
+        originalTimestamps,
+        originalValues,
+        Array.from({ length: arrayLength }, (_v, _k) => StatusType.Good)
+      );
+
+      testPeriod2 = testPeriod1.resample(resampleTimestamps);
+
+      it(`should have expected members after resampling`, function () {
+        equal(JSON.stringify(testPeriod2.values), JSON.stringify(expectedResampleValues));
+      });
+
+      it(`should be immutable to resample`, function () {
+        equal(JSON.stringify(testPeriod1.values), JSON.stringify(originalValues));
       });
     });
     describe('add()', function () {

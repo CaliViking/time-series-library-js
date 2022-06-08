@@ -1,4 +1,4 @@
-import { StatusType } from './status-type.js';
+import { Severity } from './severity.js';
 
 // t = timestamp, v = value, s status code
-export type TimeEntry = { t: Date; v: unknown; s?: StatusType };
+export type TimeEntry = { t: Date; v: unknown; s?: Severity };

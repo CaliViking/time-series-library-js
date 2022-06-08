@@ -1,6 +1,6 @@
-import { StatusType } from './status-type.js';
+import { Severity } from './severity.js';
 export declare type TimeEntry = {
     t: Date;
     v: unknown;
-    s?: StatusType;
+    s?: Severity;
 };

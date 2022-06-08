@@ -13,7 +13,7 @@ import { DataType } from './datatype.js';
 import { Values } from './values.js';
 import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
-import { StatusType } from './status-type.js';
+import { Severity } from './severity.js';
 
 interface Samplable {
   /*
@@ -35,7 +35,7 @@ export class TimeSeriesPath implements Samplable {
   interpolationMethod: InterpolationMethod;
   timestamps: Date[] = [];
   values: unknown[] = [];
-  statuses: StatusType[] = [];
+  statuses: Severity[] = [];
   startTimestamp?: Date;
   endTimestamp?: Date;
   quantityKind?: string;
@@ -143,14 +143,10 @@ export class TimeSeriesPath implements Samplable {
     return cloneTimeSeriesPeriod;
   }
 
-  public setTimeVector(
-    timestamps: Date[],
-    values: Values,
-    statuses?: StatusType[]
-  ): TimeSeriesPath {
+  public setTimeVector(timestamps: Date[], values: Values, statuses?: Severity[]): TimeSeriesPath {
     this.timestamps = timestamps;
     this.values = values;
-    this.statuses = statuses ?? new Array(timestamps.length).fill(StatusType.Good);
+    this.statuses = statuses ?? new Array(timestamps.length).fill(Severity.Good);
 
     return this;
   }
@@ -158,7 +154,7 @@ export class TimeSeriesPath implements Samplable {
   public setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath {
     const timestamps: Date[] = [];
     let values: unknown[];
-    const statuses: StatusType[] = [];
+    const statuses: Severity[] = [];
 
     switch (
       this.dataType // TODO: Is this necessary?
@@ -187,7 +183,7 @@ export class TimeSeriesPath implements Samplable {
     for (const timeEntry of timeEntries) {
       timestamps.push(timeEntry.t);
       values.push(timeEntry.v);
-      statuses.push(timeEntry.s ?? StatusType.Good);
+      statuses.push(timeEntry.s ?? Severity.Good);
     }
 
     this.timestamps = timestamps;
@@ -210,7 +206,7 @@ export class TimeSeriesPath implements Samplable {
   public setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath {
     const timestamps: Date[] = [];
     let values: unknown[];
-    const statuses: StatusType[] = [];
+    const statuses: Severity[] = [];
 
     switch (
       this.dataType // TODO: Is this necessary?
@@ -274,7 +270,7 @@ export class TimeSeriesPath implements Samplable {
   private _resampleNone(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     let objectIndex = 0;
     let targetIndex = 0;
     let found: boolean;
@@ -321,7 +317,7 @@ export class TimeSeriesPath implements Samplable {
   private _resamplePrevious(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     let objectIndex = 0;
     let targetIndex = 0;
     let found: boolean;
@@ -361,7 +357,7 @@ export class TimeSeriesPath implements Samplable {
   private _resampleNext(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     let objectIndex = 0;
     let targetIndex = 0;
     let found: boolean;
@@ -403,7 +399,7 @@ export class TimeSeriesPath implements Samplable {
     found: boolean,
     indexObjectTs: number,
     targetValues: unknown[],
-    targetStatuses: StatusType[]
+    targetStatuses: Severity[]
   ) {
     if (found) {
       targetValues.push(this.values[indexObjectTs]);
@@ -411,14 +407,14 @@ export class TimeSeriesPath implements Samplable {
     } else {
       // We did not find a match
       targetValues.push(null);
-      targetStatuses.push(StatusType.Bad);
+      targetStatuses.push(Severity.Bad);
     }
   }
 
   protected _resampleLinear(targetTimestamps: Date[]): TimeSeriesPath {
     const returnTimeSeriesPeriod = this.clone();
     const targetValues: unknown[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     let objectIndex = 0;
     let targetIndex = 0;
     let found: boolean;
@@ -471,7 +467,7 @@ export class TimeSeriesPath implements Samplable {
         }
       } else {
         targetValues.push(null);
-        targetStatuses.push(StatusType.Bad);
+        targetStatuses.push(Severity.Bad);
       }
 
       targetIndex++;
@@ -552,7 +548,7 @@ export class TimeSeriesPath implements Samplable {
 
     if (arg === null) {
       thisTimeSeriesPeriod.values.fill(null);
-      thisTimeSeriesPeriod.statuses.fill(StatusType.Bad);
+      thisTimeSeriesPeriod.statuses.fill(Severity.Bad);
     } else {
       switch (operator) {
         case '+': {
@@ -618,7 +614,7 @@ export class TimeSeriesPath implements Samplable {
       ...new Set(this.timestamps.concat(arg.timestamps).sort((a, b) => a.valueOf() - b.valueOf())),
     ];
     const targetValues: unknown[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     const thisTimeSeriesPeriod = this.resample(targetTimestamps);
     const argTimeSeriesPeriod = arg.resample(targetTimestamps);
 
@@ -785,7 +781,7 @@ export class TimeSeriesPath implements Samplable {
   private static aggregate(method: string, timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath {
     let targetTimestamps: Date[] = [];
     const targetValues: number[] = [];
-    const targetStatuses: StatusType[] = [];
+    const targetStatuses: Severity[] = [];
     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
     const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath('number', 'linear');
 
@@ -806,7 +802,7 @@ export class TimeSeriesPath implements Samplable {
       case 'sum': {
         for (let timeIndex = 0; timeIndex < targetTimestamps.length; timeIndex++) {
           let aggValue = 0;
-          let aggStatus = StatusType.Good;
+          let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggValue += interimTimeSeriesPeriod.values[timeIndex] as number;
             aggStatus =
@@ -822,7 +818,7 @@ export class TimeSeriesPath implements Samplable {
       case 'avg': {
         for (let timeIndex = 0; timeIndex < targetTimestamps.length; timeIndex++) {
           let aggValue = 0;
-          let aggStatus = StatusType.Good;
+          let aggStatus = Severity.Good;
           let aggCount = 0;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggValue += interimTimeSeriesPeriod.values[timeIndex] as number;
@@ -840,7 +836,7 @@ export class TimeSeriesPath implements Samplable {
       case 'min': {
         for (let timeIndex = 0; timeIndex < targetTimestamps.length; timeIndex++) {
           let aggValue = interimTimeSeriesPeriods[0].values[timeIndex];
-          let aggStatus = StatusType.Good;
+          let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggValue =
               (interimTimeSeriesPeriod.values[timeIndex] as number) < (aggValue as number)
@@ -859,7 +855,7 @@ export class TimeSeriesPath implements Samplable {
       case 'max': {
         for (let timeIndex = 0; timeIndex < targetTimestamps.length; timeIndex++) {
           let aggValue = interimTimeSeriesPeriods[0].values[timeIndex];
-          let aggStatus = StatusType.Good;
+          let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggValue = // If aggValue is undefined, then take the first value, else take the max value
               (interimTimeSeriesPeriod.values[timeIndex] as number) > (aggValue as number)
@@ -879,7 +875,7 @@ export class TimeSeriesPath implements Samplable {
         for (let timeIndex = 0; timeIndex < targetTimestamps.length; timeIndex++) {
           let aggMinValue = interimTimeSeriesPeriods[0].values[timeIndex];
           let aggMaxValue = interimTimeSeriesPeriods[0].values[timeIndex];
-          let aggStatus = StatusType.Good;
+          let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggMinValue = // If aggValue is undefined, then take the first value, else take the min value
               (interimTimeSeriesPeriod.values[timeIndex] as number) < (aggMinValue as number)

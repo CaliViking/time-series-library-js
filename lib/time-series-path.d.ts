@@ -3,7 +3,7 @@ import { DataType } from './datatype.js';
 import { Values } from './values.js';
 import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
-import { StatusType } from './status-type.js';
+import { Severity } from './severity.js';
 interface Samplable {
     mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
 }
@@ -12,7 +12,7 @@ export declare class TimeSeriesPath implements Samplable {
     interpolationMethod: InterpolationMethod;
     timestamps: Date[];
     values: unknown[];
-    statuses: StatusType[];
+    statuses: Severity[];
     startTimestamp?: Date;
     endTimestamp?: Date;
     quantityKind?: string;
@@ -28,7 +28,7 @@ export declare class TimeSeriesPath implements Samplable {
     validate(): boolean;
     clone(): TimeSeriesPath;
     deepClone(): TimeSeriesPath;
-    setTimeVector(timestamps: Date[], values: Values, statuses?: StatusType[]): TimeSeriesPath;
+    setTimeVector(timestamps: Date[], values: Values, statuses?: Severity[]): TimeSeriesPath;
     setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath;
     getTimeEntries(): TimeEntry[];
     setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath;

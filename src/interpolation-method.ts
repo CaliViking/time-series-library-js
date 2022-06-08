@@ -1,1 +1,6 @@
-export type InterpolationMethod = 'none' | 'previous' | 'next' | 'linear';
+export enum InterpolationMethod {
+  'none',
+  'previous',
+  'next',
+  'linear',
+}

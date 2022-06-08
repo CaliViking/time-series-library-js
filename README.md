@@ -110,9 +110,9 @@ The library is built on the following approaches:
 Here is an example of how to use the library:
 
 ```js
-let testPeriod1 = new TimeSeriesPath('number', 'linear'),
-  testPeriod2 = new TimeSeriesPath('number', 'linear'),
-  testPeriod3 = new TimeSeriesPath('number', 'linear'); // Create some time series objects
+let testPeriod1 = new TimeSeriesPath('number', InterpolationMethod.linear),
+  testPeriod2 = new TimeSeriesPath('number', InterpolationMethod.linear),
+  testPeriod3 = new TimeSeriesPath('number', InterpolationMethod.linear); // Create some time series objects
 testPeriod1.setTimeVector(
   Array.from(Array(arrayLength).keys()),
   Array.from(Array(arrayLength).keys()),

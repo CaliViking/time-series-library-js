@@ -1,1 +1,7 @@
-export type DataType = 'string' | 'number' | 'boolean' | 'JSON' | 'Date';
+export enum DataType {
+  'string',
+  'number',
+  'boolean',
+  'JSON',
+  'Date',
+}

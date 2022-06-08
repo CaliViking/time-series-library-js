@@ -1,5 +1,5 @@
 import { equal, deepEqual, notDeepEqual } from 'assert';
-import { TimeSeriesPath, Severity } from '../lib/index.js';
+import { TimeSeriesPath, Severity, InterpolationMethod, DataType } from '../lib/index.js';
 
 describe('time-series-path', function () {
   describe('Severity', function () {
@@ -17,28 +17,28 @@ describe('time-series-path', function () {
   });
   describe('TimeSeriesPath', function () {
     describe('construct', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       it('should return number for dataType', function () {
-        equal(testPeriod.dataType, 'number');
+        equal(testPeriod.dataType, DataType.number);
       });
       it('should return linear for interpolationMethod', function () {
-        equal(testPeriod.interpolationMethod, 'linear');
+        equal(testPeriod.interpolationMethod, InterpolationMethod.linear);
       });
     });
     describe('validate()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       it('should return true for validate()', function () {
         equal(testPeriod.validate(), true);
       });
     });
     describe('clone()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       it('should clone', function () {
         deepEqual(testPeriod.clone(), testPeriod);
       });
     });
     describe('not clone()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let testPeriod2 = testPeriod.clone();
       before(function () {
         testPeriod2.dataType = 'string';
@@ -48,13 +48,13 @@ describe('time-series-path', function () {
       });
     });
     describe('deepClone()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       it('should deepClone', function () {
         deepEqual(testPeriod.deepClone(), testPeriod);
       });
     });
     describe('SetTimeEntries()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let timeEntries = [
         { t: new Date('2022-01-01 00:00:00.000+00'), v: 100, s: Severity.Good },
         { t: new Date('2022-01-01 00:00:01.000+00'), v: 101, s: Severity.Uncertain },
@@ -73,7 +73,7 @@ describe('time-series-path', function () {
       });
     });
     describe('SetTimeEntries() without statuses', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let timeEntries = [
         { t: new Date('2022-01-01 00:00:00.000+00'), v: 100 },
         { t: new Date('2022-01-01 00:00:01.000+00'), v: 101 },
@@ -92,7 +92,7 @@ describe('time-series-path', function () {
       });
     });
     describe('setTimeVector()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 100000;
       before(function () {
         testPeriod.setTimeVector(
@@ -109,7 +109,7 @@ describe('time-series-path', function () {
       });
     });
     describe('setTimeVector() with no statuses', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 100000;
       before(function () {
         testPeriod.setTimeVector(
@@ -125,7 +125,7 @@ describe('time-series-path', function () {
       });
     });
     describe('getTimeEntries()', function () {
-      let testPeriod = new TimeSeriesPath('number', 'linear');
+      let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 100000;
       let testLocation = 1000;
       let timeEntries;
@@ -158,7 +158,7 @@ describe('time-series-path', function () {
       });
     });
     describe('resample() linear', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'linear');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 10000;
       let testPeriod2, testPeriod3;
 
@@ -187,7 +187,7 @@ describe('time-series-path', function () {
       });
     });
     describe('resample() previous', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'previous');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.previous);
       let arrayLength = 5;
       let testPeriod2, testPeriod3;
 
@@ -219,7 +219,7 @@ describe('time-series-path', function () {
       });
     });
     describe('resample() next', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'next');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.next);
       let arrayLength = 5;
       let testPeriod2, testPeriod3;
 
@@ -251,9 +251,9 @@ describe('time-series-path', function () {
       });
     });
     describe('resample() none', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'none');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.none);
       let arrayLength = 5;
-      let testPeriod2, testPeriod3;
+      let testPeriod2;
 
       const originalTimestamps = Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1);
       const originalValues = Array.from(Array(arrayLength).keys());
@@ -280,7 +280,7 @@ describe('time-series-path', function () {
     });
     describe('add()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -318,7 +318,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -359,7 +359,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar string', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -400,7 +400,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar boolean', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -442,7 +442,7 @@ describe('time-series-path', function () {
     });
     describe('subtract()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -478,7 +478,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -519,7 +519,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar string', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -561,7 +561,7 @@ describe('time-series-path', function () {
     });
     describe('multiply()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -586,7 +586,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -613,7 +613,7 @@ describe('time-series-path', function () {
     });
     describe('divide()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -636,7 +636,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 1000;
         let testPeriod2, testPeriod3;
@@ -663,7 +663,7 @@ describe('time-series-path', function () {
     });
     describe('pow()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -688,7 +688,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -715,7 +715,7 @@ describe('time-series-path', function () {
     });
     describe('remainder()', function () {
       describe('TSP', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -740,7 +740,7 @@ describe('time-series-path', function () {
       });
 
       describe('Scalar number', function () {
-        let testPeriod1 = new TimeSeriesPath('number', 'linear');
+        let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
         let arrayLength = 10000;
         let testLocation = 100;
         let testPeriod2, testPeriod3;
@@ -766,7 +766,7 @@ describe('time-series-path', function () {
       });
     });
     describe('negate()', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'linear');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 10000;
       let testLocation = 100;
       let testPeriod2;
@@ -785,7 +785,7 @@ describe('time-series-path', function () {
       });
     });
     describe('aggregation', function () {
-      let testPeriod1 = new TimeSeriesPath('number', 'linear');
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let arrayLength = 10000;
       let testLocation = 100;
       let testPeriod2, testPeriod3;

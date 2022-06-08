@@ -74,19 +74,19 @@ export class TimeSeriesPath implements Samplable {
       (this.expression = expression);
 
     switch (this.dataType) {
-      case 'Date': {
+      case DataType.Date: {
         this.values = Array<Date>();
         break;
       }
-      case 'string': {
+      case DataType.string: {
         this.values = Array<string>();
         break;
       }
-      case 'number': {
+      case DataType.number: {
         this.values = Array<number>();
         break;
       }
-      case 'JSON': {
+      case DataType.JSON: {
         this.values = Array<JSON>();
         break;
       }
@@ -107,14 +107,14 @@ export class TimeSeriesPath implements Samplable {
       interpolationMethodOK = false;
     } else {
       switch (this.dataType) {
-        case 'number':
-        case 'Date': {
+        case DataType.number:
+        case DataType.Date: {
           interpolationMethodOK = true;
           break;
         }
-        case 'JSON':
-        case 'string': {
-          if (this.interpolationMethod === 'linear') {
+        case DataType.JSON:
+        case DataType.string: {
+          if (this.interpolationMethod === InterpolationMethod.linear) {
             interpolationMethodOK = false;
           } else {
             interpolationMethodOK = true;
@@ -159,19 +159,19 @@ export class TimeSeriesPath implements Samplable {
     switch (
       this.dataType // TODO: Is this necessary?
     ) {
-      case 'Date': {
+      case DataType.Date: {
         values = Array<Date>();
         break;
       }
-      case 'string': {
+      case DataType.string: {
         values = Array<string>();
         break;
       }
-      case 'number': {
+      case DataType.number: {
         values = Array<number>();
         break;
       }
-      case 'JSON': {
+      case DataType.JSON: {
         values = Array<JSON>();
         break;
       }
@@ -211,19 +211,19 @@ export class TimeSeriesPath implements Samplable {
     switch (
       this.dataType // TODO: Is this necessary?
     ) {
-      case 'Date': {
+      case DataType.Date: {
         values = Array<Date>();
         break;
       }
-      case 'string': {
+      case DataType.string: {
         values = Array<string>();
         break;
       }
-      case 'number': {
+      case DataType.number: {
         values = Array<number>();
         break;
       }
-      case 'JSON': {
+      case DataType.JSON: {
         values = Array<JSON>();
         break;
       }
@@ -482,16 +482,16 @@ export class TimeSeriesPath implements Samplable {
 
   public mutableResample(targetTimestamps: Date[]): TimeSeriesPath {
     switch (this.interpolationMethod) {
-      case 'none': {
+      case InterpolationMethod.none: {
         return this._resampleNone(targetTimestamps);
       }
-      case 'previous': {
+      case InterpolationMethod.previous: {
         return this._resamplePrevious(targetTimestamps);
       }
-      case 'next': {
+      case InterpolationMethod.next: {
         return this._resampleNext(targetTimestamps);
       }
-      case 'linear': {
+      case InterpolationMethod.linear: {
         return this._resampleLinear(targetTimestamps);
       }
     }
@@ -501,16 +501,16 @@ export class TimeSeriesPath implements Samplable {
     const returnTimeSeriesPeriod: TimeSeriesPath = this.deepClone();
 
     switch (this.interpolationMethod) {
-      case 'none': {
+      case InterpolationMethod.none: {
         return returnTimeSeriesPeriod._resampleNone(targetTimestamps);
       }
-      case 'previous': {
+      case InterpolationMethod.previous: {
         return returnTimeSeriesPeriod._resamplePrevious(targetTimestamps);
       }
-      case 'next': {
+      case InterpolationMethod.next: {
         return returnTimeSeriesPeriod._resampleNext(targetTimestamps);
       }
-      case 'linear': {
+      case InterpolationMethod.linear: {
         return returnTimeSeriesPeriod._resampleLinear(targetTimestamps);
       }
     }
@@ -594,8 +594,8 @@ export class TimeSeriesPath implements Samplable {
           break;
         }
         case '<': {
-          thisTimeSeriesPeriod.dataType = 'boolean';
-          thisTimeSeriesPeriod.interpolationMethod = 'previous';
+          thisTimeSeriesPeriod.dataType = DataType.boolean;
+          thisTimeSeriesPeriod.interpolationMethod = InterpolationMethod.previous;
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
             thisTimeSeriesPeriod.values[i] =
               (thisTimeSeriesPeriod.values[i] as number) < (arg as number);
@@ -764,7 +764,7 @@ export class TimeSeriesPath implements Samplable {
   //     let targetValues: number[] = Array(numEntries);
   //     const targetStatuses: Severity[] = Array(numEntries);
   //     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
-  //     const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath('number', 'linear');
+  //     const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
 
   //     switch (shape) {
   //       case 'sine':
@@ -783,7 +783,10 @@ export class TimeSeriesPath implements Samplable {
     const targetValues: number[] = [];
     const targetStatuses: Severity[] = [];
     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
-    const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath('number', 'linear');
+    const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath(
+      DataType.number,
+      InterpolationMethod.linear
+    );
 
     // Get all common timestamps
     for (const timeSeriesPeriod of timeSeriesPeriods) {

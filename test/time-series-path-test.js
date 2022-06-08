@@ -1,6 +1,5 @@
 import { equal, deepEqual, notDeepEqual } from 'assert';
-import { TimeSeriesPath } from '../lib/index.js';
-import { Severity } from '../lib/severity.js';
+import { TimeSeriesPath, Severity } from '../lib/index.js';
 
 describe('time-series-path', function () {
   describe('Severity', function () {

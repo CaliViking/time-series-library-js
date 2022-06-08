@@ -762,7 +762,7 @@ export class TimeSeriesPath implements Samplable {
   //       (index) => index * sampleInterval + startTimestamp
   //     );
   //     let targetValues: number[] = Array(numEntries);
-  //     const targetStatuses: StatusType[] = Array(numEntries);
+  //     const targetStatuses: Severity[] = Array(numEntries);
   //     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
   //     const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath('number', 'linear');
 

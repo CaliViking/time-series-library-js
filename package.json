@@ -22,7 +22,7 @@
   },
   "scripts": {
     "lint": "tslint --project tsconfig.json",
-    "build": "npx tsc",
+    "build": "rm ./lib -fdr && npx tsc",
     "test": "mocha"
   },
   "keywords": [

@@ -34,5 +34,8 @@
     "ai",
     "analytics",
     "signal processing"
-  ]
+  ],
+  "dependencies": {
+    "dayjs": "^1.11.3"
+  }
 }

@@ -56,8 +56,8 @@ describe('time-series-path', function () {
     describe('SetTimeEntries()', function () {
       let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let timeEntries = [
-        { t: new Date('2022-01-01 00:00:00.000+00'), v: 100, s: Severity.Good },
-        { t: new Date('2022-01-01 00:00:01.000+00'), v: 101, s: Severity.Uncertain },
+        { t: new Date('2022-01-01 00:00:00.000+00').getTime(), v: 100, s: Severity.Good },
+        { t: new Date('2022-01-01 00:00:01.000+00').getTime(), v: 101, s: Severity.Uncertain },
       ];
       before(function () {
         testPeriod.setTimeEntries(timeEntries);
@@ -75,8 +75,8 @@ describe('time-series-path', function () {
     describe('SetTimeEntries() without statuses', function () {
       let testPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let timeEntries = [
-        { t: new Date('2022-01-01 00:00:00.000+00'), v: 100 },
-        { t: new Date('2022-01-01 00:00:01.000+00'), v: 101 },
+        { t: new Date('2022-01-01 00:00:00.000+00').getTime(), v: 100 },
+        { t: new Date('2022-01-01 00:00:01.000+00').getTime(), v: 101 },
       ];
       before(function () {
         testPeriod.setTimeEntries(timeEntries);

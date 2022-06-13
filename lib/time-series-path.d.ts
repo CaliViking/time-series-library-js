@@ -5,16 +5,16 @@ import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { Severity } from './severity.js';
 interface Samplable {
-    mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
+    mutableResample(targetTimestamps: number[]): TimeSeriesPath;
 }
 export declare class TimeSeriesPath implements Samplable {
     dataType: DataType;
     interpolationMethod: InterpolationMethod;
-    timestamps: Date[];
+    timestamps: number[];
     values: unknown[];
     statuses: Severity[];
-    startTimestamp?: Date;
-    endTimestamp?: Date;
+    startTimestamp?: number;
+    endTimestamp?: number;
     quantityKind?: string;
     measurementUnit?: string;
     measurementUnitMultiplier?: number;
@@ -24,11 +24,11 @@ export declare class TimeSeriesPath implements Samplable {
     expression?: string;
     error?: Error;
     hint?: string;
-    constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: Date, endTimestamp?: Date, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
+    constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: number, endTimestamp?: number, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
     validate(): boolean;
     clone(): TimeSeriesPath;
     deepClone(): TimeSeriesPath;
-    setTimeVector(timestamps: Date[], values: Values, statuses?: Severity[]): TimeSeriesPath;
+    setTimeVector(timestamps: number[], values: Values, statuses?: Severity[]): TimeSeriesPath;
     setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath;
     getTimeEntries(): TimeEntry[];
     setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath;
@@ -37,9 +37,9 @@ export declare class TimeSeriesPath implements Samplable {
     private _resamplePrevious;
     private _resampleNext;
     private _setResampleValue;
-    protected _resampleLinear(targetTimestamps: Date[]): TimeSeriesPath;
-    mutableResample(targetTimestamps: Date[]): TimeSeriesPath;
-    resample(targetTimestamps: Date[]): TimeSeriesPath;
+    protected _resampleLinear(targetTimestamps: number[]): TimeSeriesPath;
+    mutableResample(targetTimestamps: number[]): TimeSeriesPath;
+    resample(targetTimestamps: number[]): TimeSeriesPath;
     private operator;
     private operatorScalar;
     private operatorTS;

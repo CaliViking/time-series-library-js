@@ -1,6 +1,6 @@
 import { Severity } from './severity.js';
 export declare type TimeEntry = {
-    t: Date;
+    t: number;
     v: unknown;
     s?: Severity;
 };

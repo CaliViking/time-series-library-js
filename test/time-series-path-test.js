@@ -1,4 +1,5 @@
-import { equal, deepEqual, notDeepEqual } from 'assert';
+import { equal, deepEqual, notDeepEqual, ok } from 'assert';
+import { IndexMode } from '../lib/index-mode.js';
 import { TimeSeriesPath, Severity, InterpolationMethod, DataType } from '../lib/index.js';
 
 describe('time-series-path', function () {
@@ -816,6 +817,121 @@ describe('time-series-path', function () {
       });
       it(`should have range value ${4} in location ${testLocation}`, function () {
         equal(TimeSeriesPath.range(testPeriods).values[testLocation], 4);
+      });
+    });
+    describe('findForwardIndex', function () {
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let arrayLength = 10000;
+
+      before(function () {
+        testPeriod1.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
+          Array.from(Array(arrayLength).keys()),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+      });
+
+      it(`Timestamp 0 Exclusive should find index null`, function () {
+        ok(testPeriod1.forwardFindIndex(0) === null);
+      });
+      it(`Timestamp 15 should find index 1`, function () {
+        equal(testPeriod1.forwardFindIndex(15), 1);
+      });
+      it(`Timestamp 20 Exclusive should find index 1`, function () {
+        equal(testPeriod1.forwardFindIndex(20), 1);
+      });
+      it(`Timestamp 20 Inclusive should find index 2`, function () {
+        equal(testPeriod1.forwardFindIndex(20, IndexMode.Inclusive), 2);
+      });
+      it(`Timestamp 49990 Inclusive should find index 4999`, function () {
+        equal(testPeriod1.forwardFindIndex(49990, IndexMode.Inclusive), 4999);
+      });
+      it(`Timestamp 99980 Exclusive should find index 9997`, function () {
+        equal(testPeriod1.forwardFindIndex(99980, IndexMode.Exclusive), 9997);
+      });
+      it(`Timestamp 99990 Exclusive should find index 9998`, function () {
+        equal(testPeriod1.forwardFindIndex(99990, IndexMode.Exclusive), 9998);
+      });
+      it(`Timestamp 99990 Inclusive should find index 9999`, function () {
+        equal(testPeriod1.forwardFindIndex(99990, IndexMode.Inclusive), 9999);
+      });
+      it(`Timestamp 100000 Exclusive should find index 9999`, function () {
+        equal(testPeriod1.forwardFindIndex(100000, IndexMode.Exclusive), 9999);
+      });
+      it(`Timestamp 100000 Inclusive should find index 9999`, function () {
+        equal(testPeriod1.forwardFindIndex(100000, IndexMode.Inclusive), 9999);
+      });
+    });
+    describe('append', function () {
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let arrayLength = 10000;
+
+      before(function () {
+        testPeriod1.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
+          Array.from(Array(arrayLength).keys()),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        // Create testPeriod2 so that it does not overlap testPeriod1
+        testPeriod2.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10),
+          Array.from({ length: arrayLength }, (_v, _k) => 2),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        // Create testPeriod3 so that it does overlap testPeriod1
+        testPeriod3.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10),
+          Array.from({ length: arrayLength }, (_v, _k) => 4),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+
+        resultPeriod1 = testPeriod1.append(testPeriod2);
+        resultPeriod2 = testPeriod1.append(testPeriod3);
+        resultPeriod3 = testPeriod3.append(testPeriod1);
+      });
+
+      it(`Appending testPeriod2 to testPeriod1 should return timestamp length of 20000`, function () {
+        equal(resultPeriod1.timestamps.length, 20000);
+      });
+      it(`Appending testPeriod2 to testPeriod1 should return a timestamp = 100000 in position 10000`, function () {
+        equal(resultPeriod1.timestamps[10000], 100000);
+      });
+      it(`Appending testPeriod2 to testPeriod1 should return a value = 9999 in position 9999`, function () {
+        equal(resultPeriod1.values[9999], 9999);
+      });
+      it(`Appending testPeriod2 to testPeriod1 should return a value = 2 in position 10000`, function () {
+        equal(resultPeriod1.values[10000], 2);
+      });
+
+      it(`Appending testPeriod3 to testPeriod1 should return timestamp length of 15000`, function () {
+        equal(resultPeriod2.timestamps.length, 15000);
+      });
+      it(`Appending testPeriod3 to testPeriod1 should return a timestamp = 100000 in position 10000`, function () {
+        equal(resultPeriod2.timestamps[10000], 100000);
+      });
+      it(`Appending testPeriod3 to testPeriod1 should return a value = 4999 in position 4999`, function () {
+        equal(resultPeriod2.values[4999], 4999);
+      });
+      it(`Appending testPeriod3 to testPeriod1 should return a value = 4 in position 5000`, function () {
+        equal(resultPeriod2.values[5000], 4);
+      });
+
+      it(`Appending testPeriod1 to testPeriod3 should return timestamp length of 10000`, function () {
+        equal(resultPeriod3.timestamps.length, 10000);
+      });
+      it(`Appending testPeriod1 to testPeriod3 should return a timestamp = 99990 in position 9999`, function () {
+        equal(resultPeriod3.timestamps[9999], 99990);
+      });
+      it(`Appending testPeriod1 to testPeriod3 should return a value = 4999 in position 4999`, function () {
+        equal(resultPeriod3.values[4999], 4999);
+      });
+      it(`Appending testPeriod1 to testPeriod3 should return a value = 5000 in position 5000`, function () {
+        equal(resultPeriod3.values[5000], 5000);
       });
     });
   });

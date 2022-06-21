@@ -14,6 +14,7 @@ import { Values } from './values.js';
 import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { Severity } from './severity.js';
+import { IndexMode } from './index-mode.js';
 
 interface Samplable {
   /*
@@ -748,6 +749,96 @@ export class TimeSeriesPath implements Samplable {
     return thisTimeSeriesPeriod;
   }
 
+  /**
+   * Returns an object that shows where a selected timestamp
+   * @param timestamp The timestamp that you are looking for
+   */
+  private forwardIndex(targetTimestamp: number, mode: IndexMode): number {
+    // { from: number; to: number; between: boolean }
+    enum CompareReturn {
+      From,
+      To,
+      Both,
+      Between,
+      Before,
+      After,
+    }
+
+    function compare(
+      fromTimestamp: number,
+      toTimestamp: number,
+      targetTimestamp: number
+    ): CompareReturn {
+      if (fromTimestamp === toTimestamp && fromTimestamp === targetTimestamp) {
+        return CompareReturn.Both;
+      } else if (fromTimestamp === targetTimestamp) {
+        return CompareReturn.From;
+      } else if (toTimestamp === targetTimestamp) {
+        return CompareReturn.To;
+      } else if (fromTimestamp < targetTimestamp && targetTimestamp < toTimestamp) {
+        return CompareReturn.Between;
+      } else if (targetTimestamp < fromTimestamp) {
+        return CompareReturn.Before;
+      } else if (toTimestamp < targetTimestamp) {
+        return CompareReturn.After;
+      } else {
+        throw Error(
+          `Logical error in compare function: fromTimestamp = ${fromTimestamp}, toTimestamp = ${toTimestamp}, targetTimestamp = ${targetTimestamp}`
+        );
+      }
+    }
+
+    let timestampCursorMin = 0;
+    let timestampCursorMax = this.timestamps.length - 1;
+    let timestampCursor = Math.floor(timestampCursorMax / 2);
+    let foundTimestampCursor = NaN;
+    let count = 0;
+
+    if (targetTimestamp < this.timestamps[timestampCursorMin]) {
+      // There is nothing to do, just return
+      return null;
+    }
+    if (targetTimestamp > this.timestamps[timestampCursorMax]) {
+      // There is nothing to do, just return
+      return timestampCursorMax;
+    }
+
+    while (isNaN(foundTimestampCursor) && count < 32) {
+      count += 1;
+      switch (
+        compare(
+          this.timestamps[timestampCursor],
+          timestampCursor + 1 >= this.timestamps.length
+            ? this.timestamps[timestampCursor + 1]
+            : null,
+          targetTimestamp
+        )
+      ) {
+        case CompareReturn.Before:
+          timestampCursorMax = timestampCursor;
+          timestampCursor = Math.floor((timestampCursorMin + timestampCursorMax) / 2);
+          break;
+        case CompareReturn.After:
+          timestampCursorMin = timestampCursor;
+          timestampCursor = Math.ceil((timestampCursorMin + timestampCursorMax) / 2);
+          break;
+        case CompareReturn.Both:
+        case CompareReturn.From:
+          foundTimestampCursor = timestampCursor;
+          break;
+        case CompareReturn.To:
+          if (timestampCursor === this.timestamps.length - 1) {
+            foundTimestampCursor = timestampCursor;
+          } else {
+            timestampCursorMin = timestampCursor;
+            timestampCursor = timestampCursor + 1;
+          }
+          break;
+      }
+    }
+  }
+
+  public append(timeSeriesPath: TimeSeriesPath): TimeSeriesPath {}
   // TODO: Implement map, filter, reduce
   // Ideally this would be aware of interpolation so that it would use an iterated object of segments, or double segments
 

@@ -15,6 +15,8 @@ import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { Severity } from './severity.js';
 import { IndexMode } from './index-mode.js';
+import { TimeSeriesVector } from './time-series-vector.js';
+import { forwardFindIndex } from './forward-find-index.js';
 
 interface Samplable {
   /*
@@ -750,145 +752,16 @@ export class TimeSeriesPath implements Samplable {
   }
 
   /**
-   * Returns an index value representing the found targetTimestamp
-   * Developer note: We could possibly have used Array.findIndex(), but it does not seem to be a good idea on very large arrays such as time series data
-   * @param targetTimestamp The timestamp that you are looking for
-   * @param mode The type of search
-   * @returns The found index number
-   */
-  public forwardFindIndex(targetTimestamp: number, mode: IndexMode = IndexMode.Exclusive): number {
-    // { from: number; to: number; between: boolean }
-    enum CompareReturn {
-      /** The timestamp is before the target */
-      TimestampBeforeTarget,
-      /** The timestamp is at the target */
-      TimestampAtTarget,
-      /** The timestamp is after the target */
-      TimestampAfterTarget,
-    }
-
-    /**
-     * An internal function to forwardFindIndex to determine if a timestamp is before, at, or after target
-     * @param timestamp The timestamp you are evaluating
-     * @param targetTimestamp The timestamp you are comparing with
-     * @returns An CompareReturn enum that determines if the timestamp is before, at, or after the target
-     */
-    function compare(timestamp: number, targetTimestamp: number): CompareReturn {
-      // For performance reasons: Comparing inequalities first as they are more likely to happen than the equality
-      if (timestamp < targetTimestamp) {
-        return CompareReturn.TimestampBeforeTarget;
-      } else if (timestamp > targetTimestamp) {
-        return CompareReturn.TimestampAfterTarget;
-      } else if (timestamp === targetTimestamp) {
-        return CompareReturn.TimestampAtTarget;
-      } else {
-        throw Error(
-          `Logical error in compare function: fromTimestamp = ${timestamp}, targetTimestamp = ${targetTimestamp}`
-        );
-      }
-    }
-
-    /** The minimum edge of the window where the function is looking for the timestamp */
-    let timestampCursorMin = 0;
-    /** The maximum edge of the window where the function is looking for the timestamp */
-    let timestampCursorMax = this.timestamps.length - 1;
-    /** The cursor of the timestamp currently being checked */
-    let timestampCursor = Math.floor(timestampCursorMax / 2);
-    /** Used to indicate both that a timestamp was found, and what the value is */
-    let foundTimestampCursor = NaN;
-    /** Counter used to limit the number of times a loop is run. This is to ensure that the code does not run out of control */
-    let count = 0;
-    /** The maximum number of times the algorithm will run
-     * The maximum timestamp range in Javascript is from -2**53 to 2*53
-     * this means that the range is 2**54, hence the max count is 54
-     */
-    const maxCount = 54;
-
-    // If the originating object is empty, then just return null
-    if (this.timestamps.length === 0) {
-      return null;
-    }
-
-    if (targetTimestamp < this.timestamps[timestampCursorMin]) {
-      // There is nothing to do, just return
-      return null;
-    }
-    if (targetTimestamp > this.timestamps[timestampCursorMax]) {
-      // There is nothing to do, just return
-      return timestampCursorMax;
-    }
-
-    while (isNaN(foundTimestampCursor) && count < maxCount) {
-      count += 1;
-      switch (compare(this.timestamps[timestampCursor], targetTimestamp)) {
-        case CompareReturn.TimestampBeforeTarget:
-          /** Check to see if the cursor is on the last entry, or if the next timestamp is after the target */
-          if (
-            timestampCursor === this.timestamps.length - 1 ||
-            compare(this.timestamps[timestampCursor + 1], targetTimestamp) ===
-              CompareReturn.TimestampAfterTarget
-          ) {
-            // We are at the end of the array, or the next value is after the timestamp
-            foundTimestampCursor = timestampCursor;
-          } else {
-            // Continue looking
-            timestampCursorMin = timestampCursor;
-            timestampCursor = Math.ceil((timestampCursorMin + timestampCursorMax) / 2);
-          }
-          break;
-        case CompareReturn.TimestampAfterTarget:
-          timestampCursorMax = timestampCursor;
-          timestampCursor = Math.floor((timestampCursorMin + timestampCursorMax) / 2);
-          break;
-        case CompareReturn.TimestampAtTarget:
-          switch (mode) {
-            case IndexMode.Exclusive:
-              // If timestamp cursor is greater than the first array index (0), then return previous index, otherwise null
-              foundTimestampCursor = timestampCursor > 0 ? timestampCursor - 1 : null;
-              break;
-            case IndexMode.Inclusive:
-              foundTimestampCursor = timestampCursor;
-              break;
-            case IndexMode.DiscontinuityInclusive:
-              // We have to potentially look for two consecutive TimestampAtTarget if there is a discontinuity
-              if (
-                timestampCursor === this.timestamps.length - 1 ||
-                compare(this.timestamps[timestampCursor + 1], targetTimestamp) !=
-                  CompareReturn.TimestampAtTarget
-              ) {
-                // We are at the end of the array, there is no possible next value to include
-                // or the next value is not at the same timestamp, so there is no discontinuity
-                foundTimestampCursor = timestampCursor;
-              } else if (
-                compare(this.timestamps[timestampCursor + 1], targetTimestamp) ===
-                CompareReturn.TimestampAtTarget
-              )
-                // We are making the assumption that there are a maximum of two points with the same timestamp
-                // as this is the simple way to represent a discontinuity
-                foundTimestampCursor = timestampCursor + 1;
-              break;
-          }
-          break;
-      }
-    }
-    if (count === maxCount) {
-      throw Error(
-        `forwardFindIndex was unable to find timestamp ${targetTimestamp} in ${maxCount} attempts`
-      );
-    }
-    return foundTimestampCursor;
-  }
-
-  /**
    * Append adds a first time series path to a second time series path.
    * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
    * @param appendedTimeSeriesPath The time series path that will be added
    * @returns A new time series path
    */
-  public append(appendedTimeSeriesPath: TimeSeriesPath): TimeSeriesPath {
+  public append(appendedTimeSeriesPath: TimeSeriesVector): TimeSeriesPath {
     const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
 
-    const foundIndex = this.forwardFindIndex(
+    const foundIndex = forwardFindIndex(
+      this.timestamps,
       appendedTimeSeriesPath.timestamps[0],
       IndexMode.Exclusive
     );
@@ -910,21 +783,26 @@ export class TimeSeriesPath implements Samplable {
 
   /**
    * Will append multiple time series paths together
-   * @param appendedTimeSeriesPaths The array of time series paths that shall be appended together
+   * @param appendedTimeSeriesVectors The array of time series paths that shall be appended together
    * @returns A single time series path with all the paths appended together
    */
-  public static multiAppend(appendedTimeSeriesPaths: TimeSeriesPath[]): TimeSeriesPath {
-    if (appendedTimeSeriesPaths.length === 0) {
-      return null as TimeSeriesPath;
+  public static multiAppend(appendedTimeSeriesVectors: TimeSeriesVector[]): TimeSeriesVector {
+    const returnTimeSeriesVector = new TimeSeriesVector();
+    if (appendedTimeSeriesVectors.length === 0) {
+      return returnTimeSeriesVector;
     } else {
-      let returnTimeSeriesPath = new TimeSeriesPath(
-        appendedTimeSeriesPaths[0].dataType,
-        appendedTimeSeriesPaths[0].interpolationMethod
-      );
-      for (const timeSeriesPath of appendedTimeSeriesPaths) {
-        returnTimeSeriesPath = returnTimeSeriesPath.append(timeSeriesPath);
+      for (const appendTimeSeriesVector of appendedTimeSeriesVectors) {
+        returnTimeSeriesVector.timestamps = returnTimeSeriesVector.timestamps.concat(
+          appendTimeSeriesVector.timestamps
+        );
+        returnTimeSeriesVector.values = returnTimeSeriesVector.values.concat(
+          appendTimeSeriesVector.values
+        );
+        returnTimeSeriesVector.statuses = returnTimeSeriesVector.statuses.concat(
+          appendTimeSeriesVector.statuses
+        );
       }
-      return returnTimeSeriesPath;
+      return returnTimeSeriesVector;
     }
   }
 
@@ -956,35 +834,37 @@ export class TimeSeriesPath implements Samplable {
   /**
    * Replaces (by inserting) a new time series path into section of the original time series path.
    * Overlapping time ranges in the original time series path will be removed and replaced with the new points
-   * @param timeSeriesPath The time series path that shall be inserted into the original time series path
+   * @param timeSeriesVector The time series path that shall be inserted into the original time series path
    * @returns A new time series path
    */
-  public replace(timeSeriesPath: TimeSeriesPath): TimeSeriesPath {
+  public replace(timeSeriesVector: TimeSeriesVector): TimeSeriesPath {
     const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
 
-    const foundStartIndex = this.forwardFindIndex(
-      timeSeriesPath.timestamps[0],
+    const foundStartIndex = forwardFindIndex(
+      this.timestamps,
+      timeSeriesVector.timestamps[0],
       IndexMode.Exclusive
     );
 
-    const foundEndIndex = this.forwardFindIndex(
-      timeSeriesPath.timestamps[timeSeriesPath.timestamps.length - 1],
+    const foundEndIndex = forwardFindIndex(
+      this.timestamps,
+      timeSeriesVector.timestamps[timeSeriesVector.timestamps.length - 1],
       IndexMode.DiscontinuityInclusive
     );
 
     returnTimeSeriesPeriod.timestamps = this.timestamps
       .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesPath.timestamps)
+      .concat(timeSeriesVector.timestamps)
       .concat(this.timestamps.slice(foundEndIndex + 1 ?? this.statuses.length));
 
     returnTimeSeriesPeriod.values = this.values
       .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesPath.values)
+      .concat(timeSeriesVector.values)
       .concat(this.values.slice(foundEndIndex + 1 ?? this.statuses.length));
 
     returnTimeSeriesPeriod.statuses = this.statuses
       .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesPath.statuses)
+      .concat(timeSeriesVector.statuses)
       .concat(this.statuses.slice(foundEndIndex + 1 ?? this.statuses.length));
 
     return returnTimeSeriesPeriod;

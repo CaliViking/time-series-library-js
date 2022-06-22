@@ -1,6 +1,12 @@
 import { equal, deepEqual, notDeepEqual, ok } from 'assert';
 import { IndexMode } from '../lib/index-mode.js';
-import { TimeSeriesPath, Severity, InterpolationMethod, DataType } from '../lib/index.js';
+import {
+  TimeSeriesPath,
+  Severity,
+  InterpolationMethod,
+  DataType,
+  forwardFindIndex,
+} from '../lib/index.js';
 
 describe('time-series-path', function () {
   describe('Severity', function () {
@@ -832,34 +838,34 @@ describe('time-series-path', function () {
       });
 
       it(`Timestamp 0 Exclusive should find index null`, function () {
-        ok(testPeriod1.forwardFindIndex(0) === null);
+        ok(forwardFindIndex(testPeriod1.timestamps, 0) === null);
       });
       it(`Timestamp 15 should find index 1`, function () {
-        equal(testPeriod1.forwardFindIndex(15), 1);
+        equal(forwardFindIndex(testPeriod1.timestamps, 15), 1);
       });
       it(`Timestamp 20 Exclusive should find index 1`, function () {
-        equal(testPeriod1.forwardFindIndex(20), 1);
+        equal(forwardFindIndex(testPeriod1.timestamps, 20), 1);
       });
       it(`Timestamp 20 Inclusive should find index 2`, function () {
-        equal(testPeriod1.forwardFindIndex(20, IndexMode.Inclusive), 2);
+        equal(forwardFindIndex(testPeriod1.timestamps, 20, IndexMode.Inclusive), 2);
       });
       it(`Timestamp 49990 Inclusive should find index 4999`, function () {
-        equal(testPeriod1.forwardFindIndex(49990, IndexMode.Inclusive), 4999);
+        equal(forwardFindIndex(testPeriod1.timestamps, 49990, IndexMode.Inclusive), 4999);
       });
       it(`Timestamp 99980 Exclusive should find index 9997`, function () {
-        equal(testPeriod1.forwardFindIndex(99980, IndexMode.Exclusive), 9997);
+        equal(forwardFindIndex(testPeriod1.timestamps, 99980, IndexMode.Exclusive), 9997);
       });
       it(`Timestamp 99990 Exclusive should find index 9998`, function () {
-        equal(testPeriod1.forwardFindIndex(99990, IndexMode.Exclusive), 9998);
+        equal(forwardFindIndex(testPeriod1.timestamps, 99990, IndexMode.Exclusive), 9998);
       });
       it(`Timestamp 99990 Inclusive should find index 9999`, function () {
-        equal(testPeriod1.forwardFindIndex(99990, IndexMode.Inclusive), 9999);
+        equal(forwardFindIndex(testPeriod1.timestamps, 99990, IndexMode.Inclusive), 9999);
       });
       it(`Timestamp 100000 Exclusive should find index 9999`, function () {
-        equal(testPeriod1.forwardFindIndex(100000, IndexMode.Exclusive), 9999);
+        equal(forwardFindIndex(testPeriod1.timestamps, 100000, IndexMode.Exclusive), 9999);
       });
       it(`Timestamp 100000 Inclusive should find index 9999`, function () {
-        equal(testPeriod1.forwardFindIndex(100000, IndexMode.Inclusive), 9999);
+        equal(forwardFindIndex(testPeriod1.timestamps, 100000, IndexMode.Inclusive), 9999);
       });
     });
     describe('append', function () {
@@ -948,18 +954,17 @@ describe('time-series-path', function () {
       });
     });
     describe('multiAppend', function () {
-      let testPeriods = []; //new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testPeriods = [];
       let resultPeriod;
       let arrayLength = 1000;
 
       before(function () {
         for (let i = 0; i < 5; i++) {
-          const tempPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-          tempPeriod.setTimeVector(
-            Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10),
-            Array.from(Array(arrayLength).keys()),
-            Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
-          );
+          const tempPeriod = {
+            timestamps: Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10),
+            values: Array.from(Array(arrayLength).keys()),
+            statuses: Array.from({ length: arrayLength }, (_v, _k) => Severity.Good),
+          };
           testPeriods.push(tempPeriod);
         }
         resultPeriod = TimeSeriesPath.multiAppend(testPeriods);

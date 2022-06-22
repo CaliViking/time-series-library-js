@@ -6,3 +6,4 @@ export * from './time-entry.js';
 export * from './time-segment.js';
 export * from './values.js';
 export * from './time-series-vector.js';
+export * from './forward-find-index.js';

@@ -4,7 +4,7 @@ import { Values } from './values.js';
 import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { Severity } from './severity.js';
-import { IndexMode } from './index-mode.js';
+import { TimeSeriesVector } from './time-series-vector.js';
 interface Samplable {
     mutableResample(targetTimestamps: number[]): TimeSeriesPath;
 }
@@ -53,26 +53,18 @@ export declare class TimeSeriesPath implements Samplable {
     lt(arg: unknown): TimeSeriesPath;
     negate(): TimeSeriesPath;
     /**
-     * Returns an index value representing the found targetTimestamp
-     * Developer note: We could possibly have used Array.findIndex(), but it does not seem to be a good idea on very large arrays such as time series data
-     * @param targetTimestamp The timestamp that you are looking for
-     * @param mode The type of search
-     * @returns The found index number
-     */
-    forwardFindIndex(targetTimestamp: number, mode?: IndexMode): number;
-    /**
      * Append adds a first time series path to a second time series path.
      * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
      * @param appendedTimeSeriesPath The time series path that will be added
      * @returns A new time series path
      */
-    append(appendedTimeSeriesPath: TimeSeriesPath): TimeSeriesPath;
+    append(appendedTimeSeriesPath: TimeSeriesVector): TimeSeriesPath;
     /**
      * Will append multiple time series paths together
-     * @param appendedTimeSeriesPaths The array of time series paths that shall be appended together
+     * @param appendedTimeSeriesVectors The array of time series paths that shall be appended together
      * @returns A single time series path with all the paths appended together
      */
-    static multiAppend(appendedTimeSeriesPaths: TimeSeriesPath[]): TimeSeriesPath;
+    static multiAppend(appendedTimeSeriesVectors: TimeSeriesVector[]): TimeSeriesVector;
     /**
      * Split the time series path into one or multiple objects, each object having no more than sliceSize time series entries
      * The last object will contain the remainder time series entries
@@ -82,10 +74,10 @@ export declare class TimeSeriesPath implements Samplable {
     /**
      * Replaces (by inserting) a new time series path into section of the original time series path.
      * Overlapping time ranges in the original time series path will be removed and replaced with the new points
-     * @param timeSeriesPath The time series path that shall be inserted into the original time series path
+     * @param timeSeriesVector The time series path that shall be inserted into the original time series path
      * @returns A new time series path
      */
-    replace(timeSeriesPath: TimeSeriesPath): TimeSeriesPath;
+    replace(timeSeriesVector: TimeSeriesVector): TimeSeriesPath;
     private static aggregate;
     static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
     static avg(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;

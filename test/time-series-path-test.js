@@ -863,9 +863,11 @@ describe('time-series-path', function () {
       });
     });
     describe('append', function () {
+      let testEmptyPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let testPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let testPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod0;
       let resultPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let resultPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let resultPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
@@ -890,9 +892,20 @@ describe('time-series-path', function () {
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
 
+        resultPeriod0 = testEmptyPeriod1.append(testPeriod1);
         resultPeriod1 = testPeriod1.append(testPeriod2);
         resultPeriod2 = testPeriod1.append(testPeriod3);
         resultPeriod3 = testPeriod3.append(testPeriod1);
+      });
+
+      it(`Appending testPeriod1 to testEmptyPeriod1 should return timestamp length of 10000`, function () {
+        equal(resultPeriod0.timestamps.length, 10000);
+      });
+      it(`Appending testPeriod1 to testEmptyPeriod1 should return a timestamp = 99990 in position 9999`, function () {
+        equal(resultPeriod0.timestamps[9999], 99990);
+      });
+      it(`Appending testPeriod1 to testEmptyPeriod1 should return a value = 9999 in position 9999`, function () {
+        equal(resultPeriod0.values[9999], 9999);
       });
 
       it(`Appending testPeriod2 to testPeriod1 should return timestamp length of 20000`, function () {

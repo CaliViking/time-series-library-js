@@ -804,6 +804,11 @@ export class TimeSeriesPath implements Samplable {
      */
     const maxCount = 54;
 
+    // If the originating object is empty, then just return null
+    if (this.timestamps.length === 0) {
+      return null;
+    }
+
     if (targetTimestamp < this.timestamps[timestampCursorMin]) {
       // There is nothing to do, just return
       return null;

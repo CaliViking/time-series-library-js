@@ -953,6 +953,42 @@ export class TimeSeriesPath implements Samplable {
     return returnTimeSeriesPaths;
   }
 
+  /**
+   * Replaces (by inserting) a new time series path into section of the original time series path.
+   * Overlapping time ranges in the original time series path will be removed and replaced with the new points
+   * @param timeSeriesPath The time series path that shall be inserted into the original time series path
+   * @returns A new time series path
+   */
+  public replace(timeSeriesPath: TimeSeriesPath): TimeSeriesPath {
+    const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
+
+    const foundStartIndex = this.forwardFindIndex(
+      timeSeriesPath.timestamps[0],
+      IndexMode.Exclusive
+    );
+
+    const foundEndIndex = this.forwardFindIndex(
+      timeSeriesPath.timestamps[timeSeriesPath.timestamps.length - 1],
+      IndexMode.DiscontinuityInclusive
+    );
+
+    returnTimeSeriesPeriod.timestamps = this.timestamps
+      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
+      .concat(timeSeriesPath.timestamps)
+      .concat(this.timestamps.slice(foundEndIndex + 1 ?? this.statuses.length));
+
+    returnTimeSeriesPeriod.values = this.values
+      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
+      .concat(timeSeriesPath.values)
+      .concat(this.values.slice(foundEndIndex + 1 ?? this.statuses.length));
+
+    returnTimeSeriesPeriod.statuses = this.statuses
+      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
+      .concat(timeSeriesPath.statuses)
+      .concat(this.statuses.slice(foundEndIndex + 1 ?? this.statuses.length));
+
+    return returnTimeSeriesPeriod;
+  }
   // TODO: Implement map, filter, reduce
   // Ideally this would be aware of interpolation so that it would use an iterated object of segments, or double segments
 

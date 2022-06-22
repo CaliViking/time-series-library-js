@@ -975,6 +975,145 @@ describe('time-series-path', function () {
         equal(resultPeriod.values[1000], testPeriods[1].values[0]);
       });
     });
+    describe('replace', function () {
+      let testEmptyPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let basePeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let afterPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let lateOverlappingPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let insidePeriod4 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let earlyOverlappingPeriod5 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultEmptyPeriod0;
+      let resultAfterPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultLateOverlappingPeriod2 = new TimeSeriesPath(
+        DataType.number,
+        InterpolationMethod.linear
+      );
+      let resultReverseLateOverlappingPeriod3 = new TimeSeriesPath(
+        DataType.number,
+        InterpolationMethod.linear
+      );
+      let resultInsidePeriod4 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultEarlyOverlappingPeriod5 = new TimeSeriesPath(
+        DataType.number,
+        InterpolationMethod.linear
+      );
+      let arrayLength = 10000;
+
+      before(function () {
+        basePeriod1.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
+          Array.from(Array(arrayLength).keys()),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        // Create afterPeriod2 so that it does not overlap testPeriod1
+        afterPeriod2.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10),
+          Array.from({ length: arrayLength }, (_v, _k) => 2),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
+        lateOverlappingPeriod3.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10),
+          Array.from({ length: arrayLength }, (_v, _k) => 4),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        // Create insidePeriod4 so that it is inside testPeriod1
+        insidePeriod4.setTimeVector(
+          Array.from(Array(Math.floor(arrayLength / 2))).map(
+            (_v, k) => Math.floor(arrayLength / 4) * 10 + k * 10
+          ),
+          Array.from({ length: Math.floor(arrayLength / 2) }, (_v, _k) => 6),
+          Array.from({ length: Math.floor(arrayLength / 2) }, (_v, _k) => Severity.Good)
+        );
+        // Create earlyOverlappingPeriod5 so that it does overlap and is before testPeriod1
+        earlyOverlappingPeriod5.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => -Math.floor(arrayLength / 2) * 10 + k * 10),
+          Array.from({ length: arrayLength }, (_v, _k) => 7),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+
+        resultEmptyPeriod0 = testEmptyPeriod1.replace(basePeriod1);
+        resultAfterPeriod1 = basePeriod1.replace(afterPeriod2);
+        resultLateOverlappingPeriod2 = basePeriod1.replace(lateOverlappingPeriod3);
+        resultReverseLateOverlappingPeriod3 = lateOverlappingPeriod3.replace(basePeriod1);
+        resultInsidePeriod4 = basePeriod1.replace(insidePeriod4);
+        resultEarlyOverlappingPeriod5 = basePeriod1.replace(earlyOverlappingPeriod5);
+      });
+
+      it(`Replacing basePeriod1 in testEmptyPeriod1 should return timestamp length of 10000`, function () {
+        equal(resultEmptyPeriod0.timestamps.length, 10000);
+      });
+      it(`Replacing basePeriod1 in testEmptyPeriod1 should return a timestamp = 99990 in position 9999`, function () {
+        equal(resultEmptyPeriod0.timestamps[9999], 99990);
+      });
+      it(`Replacing basePeriod1 in testEmptyPeriod1 should return a value = 9999 in position 9999`, function () {
+        equal(resultEmptyPeriod0.values[9999], 9999);
+      });
+
+      it(`Replacing afterPeriod2 in basePeriod1 should return timestamp length of 20000`, function () {
+        equal(resultAfterPeriod1.timestamps.length, 20000);
+      });
+      it(`Replacing afterPeriod2 in basePeriod1 should return a timestamp = 100000 in position 10000`, function () {
+        equal(resultAfterPeriod1.timestamps[10000], 100000);
+      });
+      it(`Replacing afterPeriod2 in basePeriod1 should return a value = 9999 in position 9999`, function () {
+        equal(resultAfterPeriod1.values[9999], 9999);
+      });
+      it(`Replacing afterPeriod2 in basePeriod1 should return a value = 2 in position 10000`, function () {
+        equal(resultAfterPeriod1.values[10000], 2);
+      });
+
+      it(`Replacing lateOverlappingPeriod3 in basePeriod1 should return timestamp length of 15000`, function () {
+        equal(resultLateOverlappingPeriod2.timestamps.length, 15000);
+      });
+      it(`Replacing lateOverlappingPeriod3 in basePeriod1 should return a timestamp = 100000 in position 10000`, function () {
+        equal(resultLateOverlappingPeriod2.timestamps[10000], 100000);
+      });
+      it(`Replacing lateOverlappingPeriod3 in basePeriod1 should return a value = 4999 in position 4999`, function () {
+        equal(resultLateOverlappingPeriod2.values[4999], 4999);
+      });
+      it(`Replacing lateOverlappingPeriod3 in basePeriod1 should return a value = 4 in position 5000`, function () {
+        equal(resultLateOverlappingPeriod2.values[5000], 4);
+      });
+
+      it(`Replacing basePeriod1 in lateOverlappingPeriod3 should return timestamp length of 15000`, function () {
+        equal(resultReverseLateOverlappingPeriod3.timestamps.length, 15000);
+      });
+      it(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a timestamp = 99990 in position 9999`, function () {
+        equal(resultReverseLateOverlappingPeriod3.timestamps[9999], 99990);
+      });
+      it(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a value = 4999 in position 4999`, function () {
+        equal(resultReverseLateOverlappingPeriod3.values[4999], 4999);
+      });
+      it(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a value = 9999 in position 9999`, function () {
+        equal(resultReverseLateOverlappingPeriod3.values[9999], 9999);
+      });
+      it(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a value = 4 in position 10000`, function () {
+        equal(resultReverseLateOverlappingPeriod3.values[10000], 4);
+      });
+
+      it(`Replacing insidePeriod4 in basePeriod1 should return timestamp length of 10000`, function () {
+        equal(resultInsidePeriod4.timestamps.length, 10000);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a timestamp = 49990 in position 4999`, function () {
+        equal(resultInsidePeriod4.timestamps[4999], 49990);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a value = 2499 in position 2499`, function () {
+        equal(resultInsidePeriod4.values[2499], 2499);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a value = 6 in position 2500`, function () {
+        equal(resultInsidePeriod4.values[2500], 6);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a value = 6 in position 4999`, function () {
+        equal(resultInsidePeriod4.values[4999], 6);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a value = 6 in position 7499`, function () {
+        equal(resultInsidePeriod4.values[7499], 6);
+      });
+      it(`Replacing insidePeriod4 in basePeriod1 should return a value = 7500 in position 7500`, function () {
+        equal(resultInsidePeriod4.values[7500], 7500);
+      });
+    });
     describe('split', function () {
       let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
       let resultPeriods500;

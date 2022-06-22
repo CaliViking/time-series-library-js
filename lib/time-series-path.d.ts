@@ -79,6 +79,13 @@ export declare class TimeSeriesPath implements Samplable {
      * @param sliceSize The maximum number of time series entries in each object
      */
     split(sliceSize: number): TimeSeriesPath[];
+    /**
+     * Replaces (by inserting) a new time series path into section of the original time series path.
+     * Overlapping time ranges in the original time series path will be removed and replaced with the new points
+     * @param timeSeriesPath The time series path that shall be inserted into the original time series path
+     * @returns A new time series path
+     */
+    replace(timeSeriesPath: TimeSeriesPath): TimeSeriesPath;
     private static aggregate;
     static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
     static avg(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;

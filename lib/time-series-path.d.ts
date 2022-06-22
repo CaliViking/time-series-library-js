@@ -53,31 +53,10 @@ export declare class TimeSeriesPath implements Samplable {
     lt(arg: unknown): TimeSeriesPath;
     negate(): TimeSeriesPath;
     /**
-     * Append adds a first time series path to a second time series path.
-     * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
-     * @param appendedTimeSeriesPath The time series path that will be added
-     * @returns A new time series path
+     * Extracts the time series vector from the path
+     * @returns A new time series vector with timestamps, statuses, and timestamps
      */
-    append(appendedTimeSeriesPath: TimeSeriesVector): TimeSeriesPath;
-    /**
-     * Will append multiple time series paths together
-     * @param appendedTimeSeriesVectors The array of time series paths that shall be appended together
-     * @returns A single time series path with all the paths appended together
-     */
-    static multiAppend(appendedTimeSeriesVectors: TimeSeriesVector[]): TimeSeriesVector;
-    /**
-     * Split the time series path into one or multiple objects, each object having no more than sliceSize time series entries
-     * The last object will contain the remainder time series entries
-     * @param sliceSize The maximum number of time series entries in each object
-     */
-    split(sliceSize: number): TimeSeriesPath[];
-    /**
-     * Replaces (by inserting) a new time series path into section of the original time series path.
-     * Overlapping time ranges in the original time series path will be removed and replaced with the new points
-     * @param timeSeriesVector The time series path that shall be inserted into the original time series path
-     * @returns A new time series path
-     */
-    replace(timeSeriesVector: TimeSeriesVector): TimeSeriesPath;
+    toTimeSeriesVector(): TimeSeriesVector;
     private static aggregate;
     static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
     static avg(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;

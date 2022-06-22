@@ -2,6 +2,7 @@ import { equal, deepEqual, notDeepEqual, ok } from 'assert';
 import { IndexMode } from '../lib/index-mode.js';
 import {
   TimeSeriesPath,
+  TimeSeriesVector,
   Severity,
   InterpolationMethod,
   DataType,
@@ -825,16 +826,16 @@ describe('time-series-path', function () {
         equal(TimeSeriesPath.range(testPeriods).values[testLocation], 4);
       });
     });
+  });
+  describe('TimeSeriesVector', function () {
     describe('findForwardIndex', function () {
-      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testPeriod1 = new TimeSeriesVector();
       let arrayLength = 10000;
 
       before(function () {
-        testPeriod1.setTimeVector(
-          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
-          Array.from(Array(arrayLength).keys()),
-          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
-        );
+        testPeriod1.timestamps = Array.from(Array(arrayLength)).map((_v, k) => k * 10);
+        testPeriod1.values = Array.from(Array(arrayLength).keys());
+        testPeriod1.statuses = Array.from({ length: arrayLength }, (_v, _k) => Severity.Good);
       });
 
       it(`Timestamp 0 Exclusive should find index null`, function () {
@@ -869,30 +870,30 @@ describe('time-series-path', function () {
       });
     });
     describe('append', function () {
-      let testEmptyPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let testPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let testPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testEmptyPeriod1 = new TimeSeriesVector();
+      let testPeriod1 = new TimeSeriesVector();
+      let testPeriod2 = new TimeSeriesVector();
+      let testPeriod3 = new TimeSeriesVector();
       let resultPeriod0;
-      let resultPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let resultPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let resultPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod1 = new TimeSeriesVector();
+      let resultPeriod2 = new TimeSeriesVector();
+      let resultPeriod3 = new TimeSeriesVector();
       let arrayLength = 10000;
 
       before(function () {
-        testPeriod1.setTimeVector(
+        testPeriod1.set(
           Array.from(Array(arrayLength)).map((_v, k) => k * 10),
           Array.from(Array(arrayLength).keys()),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
         // Create testPeriod2 so that it does not overlap testPeriod1
-        testPeriod2.setTimeVector(
+        testPeriod2.set(
           Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10),
           Array.from({ length: arrayLength }, (_v, _k) => 2),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
         // Create testPeriod3 so that it does overlap testPeriod1
-        testPeriod3.setTimeVector(
+        testPeriod3.set(
           Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10),
           Array.from({ length: arrayLength }, (_v, _k) => 4),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
@@ -967,7 +968,7 @@ describe('time-series-path', function () {
           };
           testPeriods.push(tempPeriod);
         }
-        resultPeriod = TimeSeriesPath.multiAppend(testPeriods);
+        resultPeriod = TimeSeriesVector.multiAppend(testPeriods);
       });
 
       it(`Appending 5 test periods together of length 1000 should return timestamp length of 5000`, function () {
@@ -981,14 +982,14 @@ describe('time-series-path', function () {
       });
     });
     describe('replace', function () {
-      let testEmptyPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let basePeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let afterPeriod2 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let lateOverlappingPeriod3 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let insidePeriod4 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-      let earlyOverlappingPeriod5 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testEmptyPeriod1 = new TimeSeriesVector();
+      let basePeriod1 = new TimeSeriesVector();
+      let afterPeriod2 = new TimeSeriesVector();
+      let lateOverlappingPeriod3 = new TimeSeriesVector();
+      let insidePeriod4 = new TimeSeriesVector();
+      let earlyOverlappingPeriod5 = new TimeSeriesVector();
       let resultEmptyPeriod0;
-      let resultAfterPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultAfterPeriod1 = new TimeSeriesVector();
       let resultLateOverlappingPeriod2 = new TimeSeriesPath(
         DataType.number,
         InterpolationMethod.linear
@@ -997,7 +998,7 @@ describe('time-series-path', function () {
         DataType.number,
         InterpolationMethod.linear
       );
-      let resultInsidePeriod4 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultInsidePeriod4 = new TimeSeriesVector();
       let resultEarlyOverlappingPeriod5 = new TimeSeriesPath(
         DataType.number,
         InterpolationMethod.linear
@@ -1005,25 +1006,25 @@ describe('time-series-path', function () {
       let arrayLength = 10000;
 
       before(function () {
-        basePeriod1.setTimeVector(
+        basePeriod1.set(
           Array.from(Array(arrayLength)).map((_v, k) => k * 10),
           Array.from(Array(arrayLength).keys()),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
         // Create afterPeriod2 so that it does not overlap testPeriod1
-        afterPeriod2.setTimeVector(
+        afterPeriod2.set(
           Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10),
           Array.from({ length: arrayLength }, (_v, _k) => 2),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
         // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
-        lateOverlappingPeriod3.setTimeVector(
+        lateOverlappingPeriod3.set(
           Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10),
           Array.from({ length: arrayLength }, (_v, _k) => 4),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
         );
         // Create insidePeriod4 so that it is inside testPeriod1
-        insidePeriod4.setTimeVector(
+        insidePeriod4.set(
           Array.from(Array(Math.floor(arrayLength / 2))).map(
             (_v, k) => Math.floor(arrayLength / 4) * 10 + k * 10
           ),
@@ -1031,7 +1032,7 @@ describe('time-series-path', function () {
           Array.from({ length: Math.floor(arrayLength / 2) }, (_v, _k) => Severity.Good)
         );
         // Create earlyOverlappingPeriod5 so that it does overlap and is before testPeriod1
-        earlyOverlappingPeriod5.setTimeVector(
+        earlyOverlappingPeriod5.set(
           Array.from(Array(arrayLength)).map((_v, k) => -Math.floor(arrayLength / 2) * 10 + k * 10),
           Array.from({ length: arrayLength }, (_v, _k) => 7),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
@@ -1120,13 +1121,13 @@ describe('time-series-path', function () {
       });
     });
     describe('split', function () {
-      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let testPeriod1 = new TimeSeriesVector();
       let resultPeriods500;
       let resultPeriods1000;
       let arrayLength = 9500;
 
       before(function () {
-        testPeriod1.setTimeVector(
+        testPeriod1.set(
           Array.from(Array(arrayLength)).map((_v, k) => k * 10),
           Array.from(Array(arrayLength).keys()),
           Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)

@@ -14,9 +14,7 @@ import { Values } from './values.js';
 import { TimeEntry } from './time-entry.js';
 import { TimeSegment } from './time-segment.js';
 import { Severity } from './severity.js';
-import { IndexMode } from './index-mode.js';
 import { TimeSeriesVector } from './time-series-vector.js';
-import { forwardFindIndex } from './forward-find-index.js';
 
 interface Samplable {
   /*
@@ -620,7 +618,8 @@ export class TimeSeriesPath implements Samplable {
     const targetTimestamps: number[] = [
       ...new Set(this.timestamps.concat(arg.timestamps).sort((a, b) => a.valueOf() - b.valueOf())),
     ];
-    const targetValues: unknown[] = [];
+    // Operators only work on numbers
+    const targetValues: number[] = [];
     const targetStatuses: Severity[] = [];
     const thisTimeSeriesPeriod = this.resample(targetTimestamps);
     const argTimeSeriesPeriod = arg.resample(targetTimestamps);
@@ -752,123 +751,19 @@ export class TimeSeriesPath implements Samplable {
   }
 
   /**
-   * Append adds a first time series path to a second time series path.
-   * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
-   * @param appendedTimeSeriesPath The time series path that will be added
-   * @returns A new time series path
+   * Extracts the time series vector from the path
+   * @returns A new time series vector with timestamps, statuses, and timestamps
    */
-  public append(appendedTimeSeriesPath: TimeSeriesVector): TimeSeriesPath {
-    const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
-
-    const foundIndex = forwardFindIndex(
-      this.timestamps,
-      appendedTimeSeriesPath.timestamps[0],
-      IndexMode.Exclusive
-    );
-
-    returnTimeSeriesPeriod.timestamps = this.timestamps
-      .slice(0, foundIndex === null ? 0 : foundIndex + 1)
-      .concat(appendedTimeSeriesPath.timestamps);
-
-    returnTimeSeriesPeriod.values = this.values
-      .slice(0, foundIndex === null ? 0 : foundIndex + 1)
-      .concat(appendedTimeSeriesPath.values);
-
-    returnTimeSeriesPeriod.statuses = this.statuses
-      .slice(0, foundIndex === null ? 0 : foundIndex + 1)
-      .concat(appendedTimeSeriesPath.statuses);
-
-    return returnTimeSeriesPeriod;
-  }
-
-  /**
-   * Will append multiple time series paths together
-   * @param appendedTimeSeriesVectors The array of time series paths that shall be appended together
-   * @returns A single time series path with all the paths appended together
-   */
-  public static multiAppend(appendedTimeSeriesVectors: TimeSeriesVector[]): TimeSeriesVector {
+  public toTimeSeriesVector(): TimeSeriesVector {
     const returnTimeSeriesVector = new TimeSeriesVector();
-    if (appendedTimeSeriesVectors.length === 0) {
-      return returnTimeSeriesVector;
-    } else {
-      for (const appendTimeSeriesVector of appendedTimeSeriesVectors) {
-        returnTimeSeriesVector.timestamps = returnTimeSeriesVector.timestamps.concat(
-          appendTimeSeriesVector.timestamps
-        );
-        returnTimeSeriesVector.values = returnTimeSeriesVector.values.concat(
-          appendTimeSeriesVector.values
-        );
-        returnTimeSeriesVector.statuses = returnTimeSeriesVector.statuses.concat(
-          appendTimeSeriesVector.statuses
-        );
-      }
-      return returnTimeSeriesVector;
-    }
+
+    returnTimeSeriesVector.timestamps = this.timestamps;
+    returnTimeSeriesVector.values = this.values;
+    returnTimeSeriesVector.statuses = this.statuses;
+
+    return returnTimeSeriesVector;
   }
 
-  /**
-   * Split the time series path into one or multiple objects, each object having no more than sliceSize time series entries
-   * The last object will contain the remainder time series entries
-   * @param sliceSize The maximum number of time series entries in each object
-   */
-  public split(sliceSize: number): TimeSeriesPath[] {
-    /** An array that will contain all the time series path objects to be returned */
-    const returnTimeSeriesPaths: TimeSeriesPath[] = [];
-
-    /** The number of objects that will be created */
-    const numberOfObjects = Math.ceil(this.timestamps.length / sliceSize);
-
-    for (let i = 0; i < numberOfObjects; i++) {
-      returnTimeSeriesPaths.push(new TimeSeriesPath(this.dataType, this.interpolationMethod));
-      returnTimeSeriesPaths[i].timestamps = this.timestamps.slice(
-        i * sliceSize,
-        (i + 1) * sliceSize
-      );
-      returnTimeSeriesPaths[i].values = this.values.slice(i * sliceSize, (i + 1) * sliceSize);
-      returnTimeSeriesPaths[i].statuses = this.statuses.slice(i * sliceSize, (i + 1) * sliceSize);
-    }
-
-    return returnTimeSeriesPaths;
-  }
-
-  /**
-   * Replaces (by inserting) a new time series path into section of the original time series path.
-   * Overlapping time ranges in the original time series path will be removed and replaced with the new points
-   * @param timeSeriesVector The time series path that shall be inserted into the original time series path
-   * @returns A new time series path
-   */
-  public replace(timeSeriesVector: TimeSeriesVector): TimeSeriesPath {
-    const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
-
-    const foundStartIndex = forwardFindIndex(
-      this.timestamps,
-      timeSeriesVector.timestamps[0],
-      IndexMode.Exclusive
-    );
-
-    const foundEndIndex = forwardFindIndex(
-      this.timestamps,
-      timeSeriesVector.timestamps[timeSeriesVector.timestamps.length - 1],
-      IndexMode.DiscontinuityInclusive
-    );
-
-    returnTimeSeriesPeriod.timestamps = this.timestamps
-      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesVector.timestamps)
-      .concat(this.timestamps.slice(foundEndIndex + 1 ?? this.statuses.length));
-
-    returnTimeSeriesPeriod.values = this.values
-      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesVector.values)
-      .concat(this.values.slice(foundEndIndex + 1 ?? this.statuses.length));
-
-    returnTimeSeriesPeriod.statuses = this.statuses
-      .slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesVector.statuses)
-      .concat(this.statuses.slice(foundEndIndex + 1 ?? this.statuses.length));
-
-    return returnTimeSeriesPeriod;
-  }
   // TODO: Implement map, filter, reduce
   // Ideally this would be aware of interpolation so that it would use an iterated object of segments, or double segments
 

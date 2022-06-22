@@ -879,6 +879,12 @@ export class TimeSeriesPath implements Samplable {
     return foundTimestampCursor;
   }
 
+  /**
+   * Append adds a first time series path to a second time series path.
+   * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
+   * @param appendedTimeSeriesPath The time series path that will be added
+   * @returns A new time series path
+   */
   public append(appendedTimeSeriesPath: TimeSeriesPath): TimeSeriesPath {
     const returnTimeSeriesPeriod: TimeSeriesPath = this.clone();
 
@@ -900,6 +906,51 @@ export class TimeSeriesPath implements Samplable {
       .concat(appendedTimeSeriesPath.statuses);
 
     return returnTimeSeriesPeriod;
+  }
+
+  /**
+   * Will append multiple time series paths together
+   * @param appendedTimeSeriesPaths The array of time series paths that shall be appended together
+   * @returns A single time series path with all the paths appended together
+   */
+  public static multiAppend(appendedTimeSeriesPaths: TimeSeriesPath[]): TimeSeriesPath {
+    if (appendedTimeSeriesPaths.length === 0) {
+      return null as TimeSeriesPath;
+    } else {
+      let returnTimeSeriesPath = new TimeSeriesPath(
+        appendedTimeSeriesPaths[0].dataType,
+        appendedTimeSeriesPaths[0].interpolationMethod
+      );
+      for (const timeSeriesPath of appendedTimeSeriesPaths) {
+        returnTimeSeriesPath = returnTimeSeriesPath.append(timeSeriesPath);
+      }
+      return returnTimeSeriesPath;
+    }
+  }
+
+  /**
+   * Split the time series path into one or multiple objects, each object having no more than sliceSize time series entries
+   * The last object will contain the remainder time series entries
+   * @param sliceSize The maximum number of time series entries in each object
+   */
+  public split(sliceSize: number): TimeSeriesPath[] {
+    /** An array that will contain all the time series path objects to be returned */
+    const returnTimeSeriesPaths: TimeSeriesPath[] = [];
+
+    /** The number of objects that will be created */
+    const numberOfObjects = Math.ceil(this.timestamps.length / sliceSize);
+
+    for (let i = 0; i < numberOfObjects; i++) {
+      returnTimeSeriesPaths.push(new TimeSeriesPath(this.dataType, this.interpolationMethod));
+      returnTimeSeriesPaths[i].timestamps = this.timestamps.slice(
+        i * sliceSize,
+        (i + 1) * sliceSize
+      );
+      returnTimeSeriesPaths[i].values = this.values.slice(i * sliceSize, (i + 1) * sliceSize);
+      returnTimeSeriesPaths[i].statuses = this.statuses.slice(i * sliceSize, (i + 1) * sliceSize);
+    }
+
+    return returnTimeSeriesPaths;
   }
 
   // TODO: Implement map, filter, reduce

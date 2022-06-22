@@ -60,7 +60,25 @@ export declare class TimeSeriesPath implements Samplable {
      * @returns The found index number
      */
     forwardFindIndex(targetTimestamp: number, mode?: IndexMode): number;
+    /**
+     * Append adds a first time series path to a second time series path.
+     * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence
+     * @param appendedTimeSeriesPath The time series path that will be added
+     * @returns A new time series path
+     */
     append(appendedTimeSeriesPath: TimeSeriesPath): TimeSeriesPath;
+    /**
+     * Will append multiple time series paths together
+     * @param appendedTimeSeriesPaths The array of time series paths that shall be appended together
+     * @returns A single time series path with all the paths appended together
+     */
+    static multiAppend(appendedTimeSeriesPaths: TimeSeriesPath[]): TimeSeriesPath;
+    /**
+     * Split the time series path into one or multiple objects, each object having no more than sliceSize time series entries
+     * The last object will contain the remainder time series entries
+     * @param sliceSize The maximum number of time series entries in each object
+     */
+    split(sliceSize: number): TimeSeriesPath[];
     private static aggregate;
     static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
     static avg(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;

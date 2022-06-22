@@ -947,5 +947,75 @@ describe('time-series-path', function () {
         equal(resultPeriod3.values[5000], 5000);
       });
     });
+    describe('multiAppend', function () {
+      let testPeriods = []; //new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriod;
+      let arrayLength = 1000;
+
+      before(function () {
+        for (let i = 0; i < 5; i++) {
+          const tempPeriod = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+          tempPeriod.setTimeVector(
+            Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10),
+            Array.from(Array(arrayLength).keys()),
+            Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+          );
+          testPeriods.push(tempPeriod);
+        }
+        resultPeriod = TimeSeriesPath.multiAppend(testPeriods);
+      });
+
+      it(`Appending 5 test periods together of length 1000 should return timestamp length of 5000`, function () {
+        equal(resultPeriod.timestamps.length, 5000);
+      });
+      it(`resultPeriod.timestamps[1000] should be the same as testPeriods[1].timestamps[0]`, function () {
+        equal(resultPeriod.timestamps[1000], testPeriods[1].timestamps[0]);
+      });
+      it(`resultPeriod.values[1000] should be the same as testPeriods[1].values[0]`, function () {
+        equal(resultPeriod.values[1000], testPeriods[1].values[0]);
+      });
+    });
+    describe('split', function () {
+      let testPeriod1 = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
+      let resultPeriods500;
+      let resultPeriods1000;
+      let arrayLength = 9500;
+
+      before(function () {
+        testPeriod1.setTimeVector(
+          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
+          Array.from(Array(arrayLength).keys()),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        resultPeriods500 = testPeriod1.split(500);
+        resultPeriods1000 = testPeriod1.split(1000);
+      });
+
+      it(`resultPeriods500 should contain 19 TimeSeriesPaths`, function () {
+        equal(resultPeriods500.length, 19);
+      });
+      it(`The value of resultPeriods500[0].values[0] should be the same as testPeriod1.values[0]`, function () {
+        equal(resultPeriods500[0].values[0], testPeriod1.values[0]);
+      });
+      it(`The value of resultPeriods500[2].values[0] should be the same as testPeriod1.values[1000]`, function () {
+        equal(resultPeriods500[2].values[0], testPeriod1.values[1000]);
+      });
+      it(`The value of resultPeriods500[18].values[499] should be the same as testPeriod1.values[9499]`, function () {
+        equal(resultPeriods500[18].values[499], testPeriod1.values[9499]);
+      });
+
+      it(`resultPeriods1000 should contain 10 TimeSeriesPaths`, function () {
+        equal(resultPeriods1000.length, 10);
+      });
+      it(`The value of resultPeriods1000[0].values[0] should be the same as testPeriod1.values[0]`, function () {
+        equal(resultPeriods1000[0].values[0], testPeriod1.values[0]);
+      });
+      it(`The value of resultPeriods1000[2].values[0] should be the same as testPeriod1.values[2000]`, function () {
+        equal(resultPeriods1000[2].values[0], testPeriod1.values[2000]);
+      });
+      it(`The value of resultPeriods1000[9].values[499] should be the same as testPeriod1.values[9499]`, function () {
+        equal(resultPeriods1000[9].values[499], testPeriod1.values[9499]);
+      });
+    });
   });
 });

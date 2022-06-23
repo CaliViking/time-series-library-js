@@ -1214,6 +1214,8 @@ describe('time-series-path', function () {
       let resultIncludeOverflowOffTarget;
       let resultExcludeOverflowOnTarget;
       let resultExcludeOverflowOffTarget;
+      let resultIncludeOverflowOutside;
+      let resultExcludeOverflowOutside;
       let arrayLength = 10000;
 
       before(function () {
@@ -1226,6 +1228,8 @@ describe('time-series-path', function () {
         resultExcludeOverflowOnTarget = testPeriod1.slice(1000, 99000, SliceMode.ExcludeOverflow);
         resultIncludeOverflowOffTarget = testPeriod1.slice(995, 99005, SliceMode.IncludeOverflow);
         resultExcludeOverflowOffTarget = testPeriod1.slice(995, 99005, SliceMode.ExcludeOverflow);
+        resultIncludeOverflowOutside = testPeriod1.slice(-10, 100010, SliceMode.IncludeOverflow);
+        resultExcludeOverflowOutside = testPeriod1.slice(-10, 100010, SliceMode.ExcludeOverflow);
       });
 
       it(`resultIncludeOverflowOnTarget should have timestamp.length = 9801`, function () {
@@ -1266,6 +1270,26 @@ describe('time-series-path', function () {
       });
       it(`resultExcludeOverflowOffTarget.timestamps[9800] should = 99000`, function () {
         equal(resultExcludeOverflowOffTarget.timestamps[9800], 99000);
+      });
+
+      it(`resultIncludeOverflowOutside should have timestamp.length = 10000`, function () {
+        equal(resultIncludeOverflowOutside.timestamps.length, 10000);
+      });
+      it(`resultIncludeOverflowOutside.timestamps[0] should = 0`, function () {
+        equal(resultIncludeOverflowOutside.timestamps[0], 0);
+      });
+      it(`resultIncludeOverflowOutside.timestamps[9999] should = 99990`, function () {
+        equal(resultIncludeOverflowOutside.timestamps[9999], 99990);
+      });
+
+      it(`resultExcludeOverflowOutside should have timestamp.length = 10000`, function () {
+        equal(resultExcludeOverflowOutside.timestamps.length, 10000);
+      });
+      it(`resultExcludeOverflowOutside.timestamps[0] should = 0`, function () {
+        equal(resultExcludeOverflowOutside.timestamps[0], 0);
+      });
+      it(`resultExcludeOverflowOutside.timestamps[9999] should = 99990`, function () {
+        equal(resultExcludeOverflowOutside.timestamps[9999], 99990);
       });
     });
   });

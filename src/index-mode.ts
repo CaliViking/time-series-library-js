@@ -12,5 +12,7 @@ export enum IndexMode {
   /** All points that are equal to the requested timestamp are included */
   DiscontinuityInclusive,
   /** If there is no exact match, then include the first point on the outside */
+  IncludeOverflow,
+  /** If there is no exact match, then exclude the first point on the outside */
   ExcludeOverflow,
 }

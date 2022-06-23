@@ -57,13 +57,13 @@ export class TimeSeriesVector {
     const foundStartIndex = forwardFindIndex(
       this.timestamps,
       fromTimestamp,
-      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.Inclusive
+      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.IncludeOverflow
     );
 
     const foundEndIndex = reverseFindIndex(
       this.timestamps,
       toTimestamp,
-      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.Inclusive
+      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.IncludeOverflow
     );
 
     returnTimeSeriesVector.timestamps = this.timestamps.slice(foundStartIndex, foundEndIndex + 1);

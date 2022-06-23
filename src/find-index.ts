@@ -62,11 +62,19 @@ export function forwardFindIndex(
 
   if (target < sortedArray[valueCursorMin]) {
     // There is nothing to do, just return
-    return null;
+    if (mode === IndexMode.ExcludeOverflow || mode === IndexMode.IncludeOverflow) {
+      return valueCursorMin;
+    } else {
+      return null;
+    }
   }
   if (target > sortedArray[valueCursorMax]) {
     // There is nothing to do, just return
-    return valueCursorMax;
+    if (mode === IndexMode.ExcludeOverflow || mode === IndexMode.IncludeOverflow) {
+      return null;
+    } else {
+      return valueCursorMax;
+    }
   }
 
   while (isNaN(foundValueCursor) && count < maxCount) {
@@ -105,6 +113,7 @@ export function forwardFindIndex(
             // If value cursor is greater than the first array index (valueCursorMin), then return previous index, otherwise null
             foundValueCursor = valueCursor > valueCursorMin ? valueCursor - 1 : null;
             break;
+          case IndexMode.IncludeOverflow:
           case IndexMode.ExcludeOverflow:
           case IndexMode.Inclusive:
             foundValueCursor = valueCursor;
@@ -169,11 +178,19 @@ export function reverseFindIndex(
 
   if (target < sortedArray[valueCursorMin]) {
     // There is nothing to do, just return
-    return valueCursorMin;
+    if (mode === IndexMode.ExcludeOverflow || mode === IndexMode.IncludeOverflow) {
+      return null;
+    } else {
+      return valueCursorMin;
+    }
   }
   if (target > sortedArray[valueCursorMax]) {
     // There is nothing to do, just return
-    return null;
+    if (mode === IndexMode.ExcludeOverflow || mode === IndexMode.IncludeOverflow) {
+      return valueCursorMax;
+    } else {
+      return null;
+    }
   }
 
   while (isNaN(foundValueCursor) && count < maxCount) {
@@ -212,6 +229,7 @@ export function reverseFindIndex(
             // If value cursor is less than the last array index (valueCursorMax), then return next index, otherwise null
             foundValueCursor = valueCursor < valueCursorMax ? valueCursor + 1 : null;
             break;
+          case IndexMode.IncludeOverflow:
           case IndexMode.ExcludeOverflow:
           case IndexMode.Inclusive:
             foundValueCursor = valueCursor;

@@ -1,5 +1,6 @@
 import { equal, deepEqual, notDeepEqual, ok } from 'assert';
 import { IndexMode } from '../lib/index-mode.js';
+import { SliceMode } from '../lib/slice-mode.js';
 import {
   TimeSeriesPath,
   TimeSeriesVector,
@@ -7,6 +8,7 @@ import {
   InterpolationMethod,
   DataType,
   forwardFindIndex,
+  reverseFindIndex,
 } from '../lib/index.js';
 
 describe('time-series-path', function () {
@@ -828,7 +830,7 @@ describe('time-series-path', function () {
     });
   });
   describe('TimeSeriesVector', function () {
-    describe('findForwardIndex', function () {
+    describe('forwardFindIndex', function () {
       let testPeriod1 = new TimeSeriesVector();
       let arrayLength = 10000;
 
@@ -867,6 +869,50 @@ describe('time-series-path', function () {
       });
       it(`Timestamp 100000 Inclusive should find index 9999`, function () {
         equal(forwardFindIndex(testPeriod1.timestamps, 100000, IndexMode.Inclusive), 9999);
+      });
+    });
+    describe('reverseFindIndex', function () {
+      let testPeriod1 = new TimeSeriesVector();
+      let arrayLength = 10000;
+
+      before(function () {
+        testPeriod1.timestamps = Array.from(Array(arrayLength)).map((_v, k) => k * 10);
+        testPeriod1.values = Array.from(Array(arrayLength).keys());
+        testPeriod1.statuses = Array.from({ length: arrayLength }, (_v, _k) => Severity.Good);
+      });
+
+      it(`Timestamp 0 Inclusive should find index 0`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 0, IndexMode.Inclusive), 0);
+      });
+      it(`Timestamp 0 Exclusive should find index 1`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 0, IndexMode.Exclusive), 1);
+      });
+      it(`Timestamp 15 Exclusive should find index 2`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 15, IndexMode.Exclusive), 2);
+      });
+      it(`Timestamp 20 Exclusive should find index 2`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 20, IndexMode.Exclusive), 3);
+      });
+      it(`Timestamp 20 Inclusive should find index 2`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 20, IndexMode.Inclusive), 2);
+      });
+      it(`Timestamp 49990 Inclusive should find index 4999`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 49990, IndexMode.Inclusive), 4999);
+      });
+      it(`Timestamp 99980 Exclusive should find index 9999`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 99980, IndexMode.Exclusive), 9999);
+      });
+      it(`Timestamp 99990 Exclusive should find index null`, function () {
+        ok(reverseFindIndex(testPeriod1.timestamps, 99990, IndexMode.Exclusive) === null);
+      });
+      it(`Timestamp 99990 Inclusive should find index 9999`, function () {
+        equal(reverseFindIndex(testPeriod1.timestamps, 99990, IndexMode.Inclusive), 9999);
+      });
+      it(`Timestamp 100000 Exclusive should find index null`, function () {
+        ok(reverseFindIndex(testPeriod1.timestamps, 100000, IndexMode.Exclusive) === null);
+      });
+      it(`Timestamp 100000 Inclusive should find index null`, function () {
+        ok(reverseFindIndex(testPeriod1.timestamps, 100000, IndexMode.Inclusive) === null);
       });
     });
     describe('append', function () {
@@ -1160,6 +1206,66 @@ describe('time-series-path', function () {
       });
       it(`The value of resultPeriods1000[9].values[499] should be the same as testPeriod1.values[9499]`, function () {
         equal(resultPeriods1000[9].values[499], testPeriod1.values[9499]);
+      });
+    });
+    describe('slice', function () {
+      let testPeriod1 = new TimeSeriesVector();
+      let resultIncludeOverflowOnTarget;
+      let resultIncludeOverflowOffTarget;
+      let resultExcludeOverflowOnTarget;
+      let resultExcludeOverflowOffTarget;
+      let arrayLength = 10000;
+
+      before(function () {
+        testPeriod1.set(
+          Array.from(Array(arrayLength)).map((_v, k) => k * 10),
+          Array.from(Array(arrayLength).keys()),
+          Array.from({ length: arrayLength }, (_v, _k) => Severity.Good)
+        );
+        resultIncludeOverflowOnTarget = testPeriod1.slice(1000, 99000, SliceMode.IncludeOverflow);
+        resultExcludeOverflowOnTarget = testPeriod1.slice(1000, 99000, SliceMode.ExcludeOverflow);
+        resultIncludeOverflowOffTarget = testPeriod1.slice(995, 99005, SliceMode.IncludeOverflow);
+        resultExcludeOverflowOffTarget = testPeriod1.slice(995, 99005, SliceMode.ExcludeOverflow);
+      });
+
+      it(`resultIncludeOverflowOnTarget should have timestamp.length = 9801`, function () {
+        equal(resultIncludeOverflowOnTarget.timestamps.length, 9801);
+      });
+      it(`resultIncludeOverflowOnTarget.timestamps[0] should = 1000`, function () {
+        equal(resultIncludeOverflowOnTarget.timestamps[0], 1000);
+      });
+      it(`resultIncludeOverflowOnTarget.timestamps[9800] should = 99000`, function () {
+        equal(resultIncludeOverflowOnTarget.timestamps[9800], 99000);
+      });
+
+      it(`resultExcludeOverflowOnTarget should have timestamp.length = 9801`, function () {
+        equal(resultExcludeOverflowOnTarget.timestamps.length, 9801);
+      });
+      it(`resultExcludeOverflowOnTarget.timestamps[0] should = 1000`, function () {
+        equal(resultExcludeOverflowOnTarget.timestamps[0], 1000);
+      });
+      it(`resultExcludeOverflowOnTarget.timestamps[9800] should = 99000`, function () {
+        equal(resultExcludeOverflowOnTarget.timestamps[9800], 99000);
+      });
+
+      it(`resultIncludeOverflowOffTarget should have timestamp.length = 9803`, function () {
+        equal(resultIncludeOverflowOffTarget.timestamps.length, 9803);
+      });
+      it(`resultIncludeOverflowOffTarget.timestamps[0] should = 990`, function () {
+        equal(resultIncludeOverflowOffTarget.timestamps[0], 990);
+      });
+      it(`resultIncludeOverflowOffTarget.timestamps[9802] should = 99010`, function () {
+        equal(resultIncludeOverflowOffTarget.timestamps[9802], 99010);
+      });
+
+      it(`resultExcludeOverflowOffTarget should have timestamp.length = 9801`, function () {
+        equal(resultExcludeOverflowOffTarget.timestamps.length, 9801);
+      });
+      it(`resultExcludeOverflowOffTarget.timestamps[0] should = 1000`, function () {
+        equal(resultExcludeOverflowOffTarget.timestamps[0], 1000);
+      });
+      it(`resultExcludeOverflowOffTarget.timestamps[9800] should = 99000`, function () {
+        equal(resultExcludeOverflowOffTarget.timestamps[9800], 99000);
       });
     });
   });

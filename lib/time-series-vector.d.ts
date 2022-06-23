@@ -1,4 +1,5 @@
 import { Severity } from './severity.js';
+import { SliceMode } from './slice-mode.js';
 import { Values } from './values.js';
 /**
  * Three arrays for timestamps, values, and statuses
@@ -14,6 +15,11 @@ export declare class TimeSeriesVector {
      * @param sliceSize The maximum number of time series entries in each object
      */
     split(sliceSize: number): TimeSeriesVector[];
+    /**
+     * Slice the time series vector by cutting off beginning and end
+     * @param sliceSize The maximum number of time series entries in each object
+     */
+    slice(fromTimestamp: number, toTimestamp?: number, mode?: SliceMode): TimeSeriesVector;
     /**
      * Append adds a first time series path to a second time series path.
      * If there is overlap between the two paths, then the appendedTimeSeriesPath will take precedence

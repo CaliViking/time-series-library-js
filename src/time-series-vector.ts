@@ -1,6 +1,7 @@
-import { forwardFindIndex } from './forward-find-index.js';
+import { forwardFindIndex, reverseFindIndex } from './find-index.js';
 import { IndexMode } from './index-mode.js';
 import { Severity } from './severity.js';
+import { SliceMode } from './slice-mode.js';
 import { Values } from './values.js';
 
 /**
@@ -25,7 +26,7 @@ export class TimeSeriesVector {
    */
   public split(sliceSize: number): TimeSeriesVector[] {
     /** An array that will contain all the time series path objects to be returned */
-    const returnTimeSeriesPaths: TimeSeriesVector[] = [];
+    const returnTimeSeriesVectors: TimeSeriesVector[] = [];
 
     /** The number of objects that will be created */
     const numberOfObjects = Math.ceil(this.timestamps.length / sliceSize);
@@ -35,10 +36,41 @@ export class TimeSeriesVector {
       newVector.timestamps = this.timestamps.slice(i * sliceSize, (i + 1) * sliceSize);
       newVector.values = this.values.slice(i * sliceSize, (i + 1) * sliceSize);
       newVector.statuses = this.statuses.slice(i * sliceSize, (i + 1) * sliceSize);
-      returnTimeSeriesPaths.push(newVector);
+      returnTimeSeriesVectors.push(newVector);
     }
 
-    return returnTimeSeriesPaths;
+    return returnTimeSeriesVectors;
+  }
+
+  /**
+   * Slice the time series vector by cutting off beginning and end
+   * @param sliceSize The maximum number of time series entries in each object
+   */
+  public slice(
+    fromTimestamp: number,
+    toTimestamp: number = this.timestamps[this.timestamps.length],
+    mode: SliceMode = SliceMode.IncludeOverflow
+  ): TimeSeriesVector {
+    /** An array that will contain all the time series path objects to be returned */
+    const returnTimeSeriesVector = new TimeSeriesVector();
+
+    const foundStartIndex = forwardFindIndex(
+      this.timestamps,
+      fromTimestamp,
+      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.Inclusive
+    );
+
+    const foundEndIndex = reverseFindIndex(
+      this.timestamps,
+      toTimestamp,
+      mode === SliceMode.ExcludeOverflow ? IndexMode.ExcludeOverflow : IndexMode.Inclusive
+    );
+
+    returnTimeSeriesVector.timestamps = this.timestamps.slice(foundStartIndex, foundEndIndex + 1);
+    returnTimeSeriesVector.values = this.values.slice(foundStartIndex, foundEndIndex + 1);
+    returnTimeSeriesVector.statuses = this.statuses.slice(foundStartIndex, foundEndIndex + 1);
+
+    return returnTimeSeriesVector;
   }
 
   /**

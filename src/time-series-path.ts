@@ -100,8 +100,7 @@ export class TimeSeriesPath implements Samplable {
     // Array lengths
     // interpolation methods and data types
     const arraySizeOK: boolean =
-      this.timestamps.length === this.values.length &&
-      this.timestamps.length === this.statuses.length;
+      this.timestamps.length === this.values.length && this.timestamps.length === this.statuses.length;
     let interpolationMethodOK = false;
 
     if (this.interpolationMethod === undefined) {
@@ -144,11 +143,7 @@ export class TimeSeriesPath implements Samplable {
     return cloneTimeSeriesPeriod;
   }
 
-  public setTimeVector(
-    timestamps: number[],
-    values: Values,
-    statuses?: Severity[]
-  ): TimeSeriesPath {
+  public setTimeVector(timestamps: number[], values: Values, statuses?: Severity[]): TimeSeriesPath {
     this.timestamps = timestamps;
     this.values = values;
     this.statuses = statuses ?? new Array(timestamps.length).fill(Severity.Good);
@@ -459,10 +454,8 @@ export class TimeSeriesPath implements Samplable {
           targetValues.push(
             (this.values[objectIndex] as number) +
               (((this.values[objectIndex + 1] as number) - (this.values[objectIndex] as number)) *
-                (targetTimestamps[targetIndex].valueOf() -
-                  this.timestamps[objectIndex].valueOf())) /
-                (this.timestamps[objectIndex + 1].valueOf() -
-                  this.timestamps[objectIndex].valueOf())
+                (targetTimestamps[targetIndex].valueOf() - this.timestamps[objectIndex].valueOf())) /
+                (this.timestamps[objectIndex + 1].valueOf() - this.timestamps[objectIndex].valueOf())
           );
           targetStatuses.push(
             this.statuses[objectIndex] > this.statuses[objectIndex + 1]
@@ -558,43 +551,37 @@ export class TimeSeriesPath implements Samplable {
       switch (operator) {
         case '+': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) + (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) + (arg as number);
           }
           break;
         }
         case '-': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) - (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) - (arg as number);
           }
           break;
         }
         case '*': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) * (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) * (arg as number);
           }
           break;
         }
         case '/': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) / (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) / (arg as number);
           }
           break;
         }
         case '**': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) ** (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) ** (arg as number);
           }
           break;
         }
         case '%': {
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) % (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) % (arg as number);
           }
           break;
         }
@@ -602,8 +589,7 @@ export class TimeSeriesPath implements Samplable {
           thisTimeSeriesPeriod.dataType = DataType.boolean;
           thisTimeSeriesPeriod.interpolationMethod = InterpolationMethod.previous;
           for (let i = 0; i < thisTimeSeriesPeriod.values.length; i++) {
-            thisTimeSeriesPeriod.values[i] =
-              (thisTimeSeriesPeriod.values[i] as number) < (arg as number);
+            thisTimeSeriesPeriod.values[i] = (thisTimeSeriesPeriod.values[i] as number) < (arg as number);
           }
           break;
         }
@@ -627,9 +613,7 @@ export class TimeSeriesPath implements Samplable {
     switch (operator) {
       case '+': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) + (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) + (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -640,9 +624,7 @@ export class TimeSeriesPath implements Samplable {
       }
       case '-': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) - (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) - (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -653,9 +635,7 @@ export class TimeSeriesPath implements Samplable {
       }
       case '*': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) * (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) * (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -666,9 +646,7 @@ export class TimeSeriesPath implements Samplable {
       }
       case '/': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) / (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) / (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -679,9 +657,7 @@ export class TimeSeriesPath implements Samplable {
       }
       case '**': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) ** (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) ** (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -692,9 +668,7 @@ export class TimeSeriesPath implements Samplable {
       }
       case '%': {
         for (let i = 0; i < targetTimestamps.length; i++) {
-          targetValues.push(
-            (thisTimeSeriesPeriod.values[i] as number) % (argTimeSeriesPeriod.values[i] as number)
-          );
+          targetValues.push((thisTimeSeriesPeriod.values[i] as number) % (argTimeSeriesPeriod.values[i] as number));
           targetStatuses.push(
             thisTimeSeriesPeriod.statuses[i] > argTimeSeriesPeriod.statuses[i]
               ? thisTimeSeriesPeriod.statuses[i]
@@ -803,10 +777,7 @@ export class TimeSeriesPath implements Samplable {
     const targetValues: number[] = [];
     const targetStatuses: Severity[] = [];
     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
-    const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath(
-      DataType.number,
-      InterpolationMethod.linear
-    );
+    const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
 
     // Get all common timestamps
     for (const timeSeriesPeriod of timeSeriesPeriods) {
@@ -980,18 +951,3 @@ export class TimeSeriesPath implements Samplable {
     }
     */
 }
-
-// const myTS = new TimeSeriesPeriod("number", "linear");    //[1,2,3], [1.1,1.2,1.3],[0,0,0]
-// myTS.timestamps = [1,2,3,4];
-// myTS.values = [11,12,13,24];
-// myTS.statuses = [0,0,0];
-
-// console.log(myTS);
-// console.log(myTS.validate());
-// console.log(myTS.resample([1,1.4,2,2.1,2.5,3]));
-
-// console.log(myTS.operateOnTSP('+', myTS));
-
-// console.log(myTS.operateOnTSP('-', myTS));
-// console.log(myTS.operateOnTSP('*', myTS));
-// console.log(myTS.operateOnTSP('**', myTS));

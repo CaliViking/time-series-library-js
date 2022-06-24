@@ -34,11 +34,7 @@ function compare(value: number, target: number): CompareReturn {
  * @param mode The type of search
  * @returns The found index number
  */
-export function forwardFindIndex(
-  sortedArray: number[],
-  target: number,
-  mode: IndexMode = IndexMode.Exclusive
-): number {
+export function forwardFindIndex(sortedArray: number[], target: number, mode: IndexMode = IndexMode.Exclusive): number {
   /** The minimum edge of the window where the function is looking for the value */
   let valueCursorMin = 0;
   /** The maximum edge of the window where the function is looking for the value */
@@ -127,9 +123,7 @@ export function forwardFindIndex(
               // We are at the end of the array, there is no possible next value to include
               // or the next value is not at the same value, so there is no discontinuity
               foundValueCursor = valueCursor;
-            } else if (
-              compare(sortedArray[valueCursor + 1], target) === CompareReturn.ValueAtTarget
-            )
+            } else if (compare(sortedArray[valueCursor + 1], target) === CompareReturn.ValueAtTarget)
               // We are making the assumption that there are a maximum of two points with the same value
               // as this is the simple way to represent a discontinuity
               foundValueCursor = valueCursor + 1;
@@ -150,11 +144,7 @@ export function forwardFindIndex(
  * @param mode The type of search
  * @returns The found index number
  */
-export function reverseFindIndex(
-  sortedArray: number[],
-  target: number,
-  mode: IndexMode = IndexMode.Exclusive
-): number {
+export function reverseFindIndex(sortedArray: number[], target: number, mode: IndexMode = IndexMode.Exclusive): number {
   /** The minimum edge of the window where the function is looking for the value */
   let valueCursorMin = 0;
   /** The maximum edge of the window where the function is looking for the value */
@@ -243,9 +233,7 @@ export function reverseFindIndex(
               // We are at the end of the array, there is no possible next value to include
               // or the next value is not at the same value, so there is no discontinuity
               foundValueCursor = valueCursor;
-            } else if (
-              compare(sortedArray[valueCursor - 1], target) === CompareReturn.ValueAtTarget
-            )
+            } else if (compare(sortedArray[valueCursor - 1], target) === CompareReturn.ValueAtTarget)
               // We are making the assumption that there are a maximum of two points with the same value
               // as this is the simple way to represent a discontinuity
               foundValueCursor = valueCursor - 1;

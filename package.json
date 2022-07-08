@@ -2,7 +2,7 @@
   "name": "@nielsandersen/time-series-library-js",
   "author": "Niels Erik Andersen",
   "description": "A library for managing and processing time series data.",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "type": "module",

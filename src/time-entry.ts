@@ -13,5 +13,11 @@ export enum ArrayPositions {
   TIMESTAMP = 0,
   VALUE = 1,
   STATUS_CODE = 2,
+}
+
+export enum NamedArrayPositions {
   SOURCE_ID = 3,
+  TIMESTAMP = 0,
+  VALUE = 1,
+  STATUS_CODE = 2,
 }

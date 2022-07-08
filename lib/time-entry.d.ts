@@ -16,6 +16,11 @@ export declare type NamedTimeEntryArray = [...TimeEntryArray, string];
 export declare enum ArrayPositions {
     TIMESTAMP = 0,
     VALUE = 1,
-    STATUS_CODE = 2,
-    SOURCE_ID = 3
+    STATUS_CODE = 2
+}
+export declare enum NamedArrayPositions {
+    SOURCE_ID = 3,
+    TIMESTAMP = 0,
+    VALUE = 1,
+    STATUS_CODE = 2
 }

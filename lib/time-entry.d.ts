@@ -19,8 +19,8 @@ export declare enum ArrayPositions {
     STATUS_CODE = 2
 }
 export declare enum NamedArrayPositions {
-    SOURCE_ID = 3,
-    TIMESTAMP = 0,
-    VALUE = 1,
-    STATUS_CODE = 2
+    SOURCE_ID = 0,
+    TIMESTAMP = 1,
+    VALUE = 2,
+    STATUS_CODE = 3
 }

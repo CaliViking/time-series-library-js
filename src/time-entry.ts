@@ -7,7 +7,7 @@ export type NamedTimeEntry = { id: string } & TimeEntry;
 /** Array containing [timestamp, value, status code] */
 export type TimeEntryArray = [number, unknown, number];
 /** Array containing [sourceId, timestamp, value, status code] */
-export type NamedTimeEntryArray = [...TimeEntryArray, string];
+export type NamedTimeEntryArray = [string, ...TimeEntryArray];
 
 export enum ArrayPositions {
   TIMESTAMP = 0,

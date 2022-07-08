@@ -13,7 +13,7 @@ export declare type NamedTimeEntry = {
 export declare type TimeEntryArray = [number, unknown, number];
 /** Array containing [sourceId, timestamp, value, status code] */
 export declare type NamedTimeEntryArray = [...TimeEntryArray, string];
-export declare enum NameTimeEntryPositions {
+export declare enum ArrayPositions {
     TIMESTAMP = 0,
     VALUE = 1,
     STATUS_CODE = 2,

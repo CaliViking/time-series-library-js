@@ -6,14 +6,14 @@ import { ArrayPositions, TimeEntry, TimeEntryArray } from './time-entry.js';
 import { whatsMyType } from './what-is-my-type.js';
 
 export class TimestampsClass extends Float64Array {
-  slice(start: number, end?: number): TimestampsClass {
+  indexSlice(start: number, end?: number): TimestampsClass {
     return Object.assign(new TimestampsClass((end ?? this.length) - start), (this as Float64Array).slice(start, end));
   }
   public sortAndRemoveDuplicates(): TimestampsClass {
-    return Object.assign(
-      new TimestampsClass(),
-      TimestampsClass.from([...new Set(this.sort((a, b) => a.valueOf() - b.valueOf()))])
-    );
+    const tempTimestamps = Float64Array.from([...new Set(this.sort((a, b) => a.valueOf() - b.valueOf()))]);
+    const returnTimestamps = new TimestampsClass(tempTimestamps.length);
+    returnTimestamps.set(tempTimestamps);
+    return returnTimestamps;
   }
 
   /**
@@ -22,10 +22,10 @@ export class TimestampsClass extends Float64Array {
    * @returns A new TimestampsClass array object
    */
   public combine(combineTimestamps: TimestampsClass): TimestampsClass {
-    const bigArray = new TimestampsClass(this.length + combineTimestamps.length);
-    bigArray.set(this);
-    bigArray.set(combineTimestamps, this.length);
-    return bigArray.sortAndRemoveDuplicates();
+    const combinedTimestamps = new TimestampsClass(this.length + combineTimestamps.length);
+    combinedTimestamps.set(this);
+    combinedTimestamps.set(combineTimestamps, this.length);
+    return combinedTimestamps.sortAndRemoveDuplicates();
   }
 }
 
@@ -34,7 +34,7 @@ export class StatusesClass extends Uint32Array {}
 /**
  * UInt8Array is for boolean
  */
-export type ValueArrayType = Uint32Array | Float64Array | Uint8Array | string[] | object[];
+export type ValueArrayType = Uint32Array | Float64Array | Uint8Array | string[] | object[] | boolean[];
 
 interface VectorInterface {
   length: number;
@@ -45,66 +45,139 @@ interface VectorInterface {
 
 export class Vector<ValueType extends ValueArrayType> {
   timestamps: TimestampsClass;
-  values: unknown;
+  values: ValueType;
   statuses: StatusesClass;
   dataType: ValueType;
 
-  constructor(dataType: ValueType, length: number) {
-    this.timestamps = new TimestampsClass(length);
-    switch (whatsMyType(dataType)) {
-      case 'Uint8Array':
-        this.values = new Uint8Array(length);
-        break;
-      case 'Uint32Array':
-        this.values = new Uint32Array(length);
-        break;
-      case 'Float64Array':
-        this.values = new Float64Array(length);
-        break;
-      case 'Array':
-        this.values = new Array(length);
-        break;
-      default:
-        throw Error('Invalid dataType');
+  constructor(config?: { dataType: ValueType; length: number }) {
+    if (config) {
+      this.timestamps = new TimestampsClass(config.length);
+      switch (whatsMyType(config.dataType)) {
+        case 'Uint8Array':
+          (this.values as Uint8Array) = new Uint8Array(config.length);
+          break;
+        case 'Uint32Array':
+          (this.values as Uint32Array) = new Uint32Array(config.length);
+          break;
+        case 'Float64Array':
+          (this.values as Float64Array) = new Float64Array(config.length);
+          break;
+        case 'Array':
+          (this.values as unknown[]) = new Array(config.length);
+          break;
+        default:
+          throw Error(`Invalid dataType ${whatsMyType(config.dataType)}`);
+      }
+      this.statuses = new StatusesClass(config.length);
     }
-    this.statuses = new StatusesClass(length);
   }
 
+  public deepClone(): Vector<ValueType> {
+    const returnVector = new Vector<ValueType>({ dataType: this.values, length: this.timestamps.length });
+    returnVector.set(this);
+    return returnVector;
+  }
+
+  public set(vector: Vector<ValueType>): void {
+    this.timestamps.set(vector.timestamps);
+    this.statuses.set(vector.statuses);
+    switch (whatsMyType(vector.values)) {
+      case 'Uint8Array':
+        (this.values as Uint8Array).set(vector.values as Uint8Array);
+        break;
+      case 'Uint32Array':
+        (this.values as Uint32Array).set(vector.values as Uint32Array);
+        break;
+      case 'Float64Array':
+        (this.values as Float64Array).set(vector.values as Float64Array);
+        break;
+      case 'Array':
+        for (let i = 0; i < vector.values.length; i++) {
+          this.values[i] = vector.values[i];
+        }
+        break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(vector.values)}`);
+    }
+  }
   public validate(): boolean {
     // Array lengths
     return (
-      this.timestamps.length === (this.values as ValueType).length && this.timestamps.length === this.statuses.length
+      this.timestamps?.length === (this.values as ValueType)?.length &&
+      this.timestamps?.length === this.statuses?.length
     );
   }
 
-  public setBad(): Vector<ValueType> {
-    const vector = new Vector(FloatDataType, this.timestamps.length);
-    vector.timestamps.set(this.timestamps);
-    switch (whatsMyType(this.dataType)) {
-      case 'Uint32Array':
-        (vector.values as Uint32Array).fill(null);
-        break;
+  public createElements(length: number): Vector<ValueType> {
+    this.timestamps = new TimestampsClass(length);
+    switch (whatsMyType(this.values)) {
       case 'Uint8Array':
-        (vector.values as Uint8Array).fill(null);
+        (this.values as Uint8Array) = new Uint8Array(length);
+        break;
+      case 'Uint32Array':
+        (this.values as Uint32Array) = new Uint32Array(length);
         break;
       case 'Float64Array':
-        (vector.values as Float64Array).fill(null);
+        (this.values as Float64Array) = new Float64Array(length);
         break;
-      // TODO: Other arrays
+      case 'Array':
+        (this.values as unknown[]) = new Array(length);
+        break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(this.values)}`);
     }
-    vector.statuses.fill(Severity.Bad);
-    return vector;
+    this.statuses = new StatusesClass(length);
+    return this;
   }
 
+  /**
+   * Warning, methods with set in the name change the vector. They are mutable.
+   * @returns An altered Vector
+   */
+  public setBad(): Vector<ValueType> {
+    switch (whatsMyType(this.values)) {
+      case 'Uint32Array':
+        (this.values as Uint32Array).fill(NaN);
+        break;
+      case 'Uint8Array':
+        (this.values as Uint8Array).fill(NaN);
+        break;
+      case 'Float64Array':
+        (this.values as Float64Array).fill(NaN);
+        break;
+      case 'Array':
+        for (let i = 0; i < this.values.length; i++) {
+          this.values[i] = null;
+        }
+        break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(this.values)}`);
+    }
+    this.statuses.fill(Severity.Bad);
+    return this;
+  }
+
+  /**
+   * Creates a new vector from the passed in elements (timestamp, value, status)
+   * @param timestamps
+   * @param values
+   * @param statuses
+   * @returns A new Vector
+   */
   public static fromElements<ValueType extends ValueArrayType>(
     timestamps: TimestampsClass,
     values: ValueType,
     statuses?: StatusesClass
   ): Vector<ValueType> {
-    const returnVector = new Vector<ValueType>(timestamps.length);
+    // let dataType: ValueType;
+    const returnVector = new Vector({ dataType: values, length: timestamps.length });
 
     returnVector.timestamps.set(timestamps);
-    returnVector.statuses.set(statuses);
+    if (statuses) {
+      returnVector.statuses.set(statuses);
+    } else {
+      returnVector.statuses.fill(0);
+    }
     switch (whatsMyType(values)) {
       case 'Uint8Array':
         (returnVector.values as Uint8Array).set(values as Uint8Array);
@@ -120,68 +193,89 @@ export class Vector<ValueType extends ValueArrayType> {
           returnVector.values[i] = values[i];
         }
         break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(values)}`);
     }
     return returnVector;
   }
 
+  /**
+   * Creates a new vector from an array of time entries [{t,v,s}...{t,v,s}]
+   * @param timeEntries in the format [{t,v,s}...{t,v,s}]
+   * @returns A new Vector
+   */
   public static fromTimeEntries(timeEntries: TimeEntry[]): Vector<ValueArrayType> {
     if (timeEntries.length === 0) {
-      throw Error('Array length is 0');
+      throw Error('Unable to tell data type from an array with length 0');
     }
 
     let returnVector: Vector<ValueArrayType>;
 
     switch (whatsMyType(timeEntries[0].v)) {
-      case 'number':
-        returnVector = new Vector<Float64Array>(timeEntries.length);
+      case 'Number':
+        returnVector = new Vector<Float64Array>({ dataType: FloatDataType, length: timeEntries.length });
         break;
-      case 'string':
-        returnVector = new Vector<string[]>(timeEntries.length);
+      case 'String':
+        returnVector = new Vector<string[]>({ dataType: StringDataType, length: timeEntries.length });
         break;
-      case 'boolean':
-        returnVector = new Vector<Uint8Array>(timeEntries.length);
+      case 'Boolean':
+        returnVector = new Vector<Uint8Array>({ dataType: BooleanDataType, length: timeEntries.length });
         break;
-      case 'object':
-        returnVector = new Vector<object[]>(timeEntries.length);
+      case 'Object':
+        returnVector = new Vector<object[]>({ dataType: ObjectDataType, length: timeEntries.length });
+        break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(timeEntries[0].v)}`);
     }
 
     for (let i = 0; i < timeEntries.length; i++) {
       returnVector.timestamps[i] = timeEntries[i].t;
-      returnVector.values[i] = timeEntries[i].v;
+      (returnVector.values[i] as unknown) = timeEntries[i].v;
       returnVector.statuses[i] = timeEntries[i].s || 0;
     }
     return returnVector;
   }
 
-  public static fromTimeEntriesArray(timeEntries: TimeEntryArray[]): Vector<ValueArrayType> {
-    if (timeEntries.length === 0) {
-      throw Error('Array length is 0');
+  /**
+   * Creates a new vector from an array of time entry arrays [[t,v,s]...[t,v,s]]
+   * @param timeEntryArrays in the format [[t,v,s]...[t,v,s]]
+   * @returns A new Vector
+   */
+  public static fromTimeEntryArrays(timeEntryArrays: TimeEntryArray[]): Vector<ValueArrayType> {
+    if (timeEntryArrays.length === 0) {
+      throw Error('Unable to tell data type from an array with length 0');
     }
-
     let returnVector: Vector<ValueArrayType>;
 
-    switch (whatsMyType(timeEntries[0][ArrayPositions.VALUE])) {
-      case 'number':
-        returnVector = new Vector<Float64Array>(timeEntries.length);
+    switch (whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])) {
+      case 'Number':
+        returnVector = new Vector({ dataType: FloatDataType, length: timeEntryArrays.length });
         break;
-      case 'string':
-        returnVector = new Vector<string[]>(timeEntries.length);
+      case 'String':
+        returnVector = new Vector({ dataType: StringDataType, length: timeEntryArrays.length });
         break;
-      case 'boolean':
-        returnVector = new Vector<Uint8Array>(timeEntries.length);
+      case 'Boolean':
+        returnVector = new Vector({ dataType: BooleanDataType, length: timeEntryArrays.length });
         break;
-      case 'object':
-        returnVector = new Vector<object[]>(timeEntries.length);
+      case 'Object':
+        returnVector = new Vector({ dataType: ObjectDataType, length: timeEntryArrays.length });
+        break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])}`);
     }
 
-    for (let i = 0; i < timeEntries.length; i++) {
-      returnVector.timestamps[i] = timeEntries[i][ArrayPositions.TIMESTAMP];
-      returnVector.values[i] = timeEntries[i][ArrayPositions.VALUE];
-      returnVector.statuses[i] = timeEntries[i][ArrayPositions.STATUS_CODE] || 0;
+    for (let i = 0; i < timeEntryArrays.length; i++) {
+      returnVector.timestamps[i] = timeEntryArrays[i][ArrayPositions.TIMESTAMP];
+      (returnVector.values[i] as unknown) = timeEntryArrays[i][ArrayPositions.VALUE];
+      returnVector.statuses[i] = timeEntryArrays[i][ArrayPositions.STATUS_CODE] || 0;
     }
     return returnVector;
   }
 
+  /**
+   *
+   * @returns An array of TimeEntry [{t,v,s}...{t,v,s}]
+   */
   public getTimeEntries(): TimeEntry[] {
     const timeEntries: TimeEntry[] = [];
 
@@ -192,7 +286,11 @@ export class Vector<ValueType extends ValueArrayType> {
     return timeEntries;
   }
 
-  public getTimeEntriesArray(): TimeEntryArray[] {
+  /**
+   *
+   * @returns An array of TimeEntryArray [[t,v,s]...[t,v,s]]
+   */
+  public getTimeEntryArrays(): TimeEntryArray[] {
     const timeEntries: TimeEntryArray[] = [];
 
     for (let i = 0; i < this.timestamps.length; i++) {
@@ -203,8 +301,11 @@ export class Vector<ValueType extends ValueArrayType> {
   }
 
   /**
-   * Slice the time series vector by cutting off beginning and end
-   * @param sliceSize The maximum number of time series entries in each object
+   * Slice the time series vector by cutting off beginning and end based on passed in timestamps
+   * @param fromTimestamp The from timestamp position
+   * @param toTimestamp The to timestamp position
+   * @param mode
+   * @returns a new Vector created by the underlying slice method
    */
   public sliceTime(
     fromTimestamp: number,
@@ -227,11 +328,19 @@ export class Vector<ValueType extends ValueArrayType> {
     return this.slice(foundStartIndex, foundEndIndex + 1);
   }
 
-  public slice(start: number, end?: number): Vector<ValueType> {
-    this.timestamps = this.timestamps.slice(start, end);
-    this.values = (this.values as ValueType).slice(start, end) as ValueType;
-    this.statuses = this.statuses.slice(start, end);
-    return this;
+  /**
+   * Slice the time series vector by cutting off beginning and end based on passed in index positions
+   * @param fromIndex The start index position
+   * @param toIndex The to index position
+   *
+   * @returns a new Vector
+   */
+  public slice(fromIndex: number, toIndex?: number): Vector<ValueType> {
+    return Vector.fromElements(
+      this.timestamps.indexSlice(fromIndex, toIndex),
+      (this.values as ValueType).slice(fromIndex, toIndex) as ValueType,
+      this.statuses.slice(fromIndex, toIndex)
+    );
   }
 
   /**
@@ -261,40 +370,54 @@ export class Vector<ValueType extends ValueArrayType> {
    * @returns A new time series path
    */
   public concat(concatVector: Vector<ValueType>): Vector<ValueType> {
-    const newLength = this.timestamps.length + concatVector.timestamps.length;
-    const returnVector = new Vector<ValueType>(newLength);
+    if (concatVector.timestamps.length === 0) {
+      return this.deepClone();
+    }
 
-    const foundIndex = forwardFindIndex(this.timestamps, concatVector.timestamps[0], IndexMode.Exclusive);
-    const adjustedFoundIndex = foundIndex === null ? 0 : foundIndex + 1;
+    /** The place where the original vector will be cut off */
+    const cutOffIndex = forwardFindIndex(this.timestamps, concatVector.timestamps[0], IndexMode.Exclusive);
+    /** Adjusted for not finding the cut off point, which means that the start of the concatVector is before the start of the original vector */
+    const adjustedCutOffIndex = cutOffIndex === null ? 0 : cutOffIndex + 1;
 
-    returnVector.timestamps.set(this.timestamps.slice(0, adjustedFoundIndex));
-    returnVector.timestamps.set(concatVector.timestamps, adjustedFoundIndex);
+    /** The length of the new vector */
+    const newLength = adjustedCutOffIndex + concatVector.timestamps.length;
+    /** The vector for storing the results */
+    const returnVector = new Vector<ValueType>({ dataType: this.values, length: newLength });
 
-    switch (whatsMyType(this.dataType)) {
+    // Only use the portion of the original vector up to where the cut off is
+    if (adjustedCutOffIndex > 0) {
+      // This if statement is only there for performance reasons, it avoids copying the whole memory
+      returnVector.timestamps.set(this.timestamps.indexSlice(0, adjustedCutOffIndex));
+    }
+    returnVector.timestamps.set(concatVector.timestamps, adjustedCutOffIndex);
+
+    switch (whatsMyType(this.values)) {
       case 'Uint8Array':
-        (returnVector.values as Uint8Array).set((this.values as Uint8Array).slice(0, adjustedFoundIndex));
-        (returnVector.values as Uint8Array).set(concatVector.values as Uint8Array, adjustedFoundIndex);
+        (returnVector.values as Uint8Array).set((this.values as Uint8Array).slice(0, adjustedCutOffIndex));
+        (returnVector.values as Uint8Array).set(concatVector.values as Uint8Array, adjustedCutOffIndex);
         break;
       case 'Uint32Array':
-        (returnVector.values as Uint32Array).set((this.values as Uint32Array).slice(0, adjustedFoundIndex));
-        (returnVector.values as Uint32Array).set(concatVector.values as Uint32Array, adjustedFoundIndex);
+        (returnVector.values as Uint32Array).set((this.values as Uint32Array).slice(0, adjustedCutOffIndex));
+        (returnVector.values as Uint32Array).set(concatVector.values as Uint32Array, adjustedCutOffIndex);
         break;
       case 'Float64Array':
-        (returnVector.values as Float64Array).set((this.values as Float64Array).slice(0, adjustedFoundIndex));
-        (returnVector.values as Float64Array).set(concatVector.values as Float64Array, adjustedFoundIndex);
+        (returnVector.values as Float64Array).set((this.values as Float64Array).slice(0, adjustedCutOffIndex));
+        (returnVector.values as Float64Array).set(concatVector.values as Float64Array, adjustedCutOffIndex);
         break;
       case 'Array':
-        for (let i = 0; i < adjustedFoundIndex; i++) {
+        for (let i = 0; i < adjustedCutOffIndex; i++) {
           returnVector.values[i] = this.values[i];
         }
         for (let i = 0; i < concatVector.timestamps.length; i++) {
-          returnVector.values[adjustedFoundIndex + i] = concatVector.values[i];
+          returnVector.values[adjustedCutOffIndex + i] = concatVector.values[i];
         }
         break;
+      default:
+        throw Error(`Invalid dataType ${whatsMyType(this.values)}`);
     }
 
-    returnVector.statuses.set(this.statuses.slice(0, adjustedFoundIndex));
-    returnVector.statuses.set(concatVector.statuses, adjustedFoundIndex);
+    returnVector.statuses.set(this.statuses.slice(0, adjustedCutOffIndex));
+    returnVector.statuses.set(concatVector.statuses, adjustedCutOffIndex);
 
     return returnVector;
   }
@@ -305,44 +428,52 @@ export class Vector<ValueType extends ValueArrayType> {
    * @returns A single time series path with all the paths concatenated together
    */
   public static multiConcat<ValueType extends ValueArrayType>(concatVectors: Vector<ValueType>[]): Vector<ValueType> {
-    const returnVector = new Vector<ValueType>(0);
     if (concatVectors.length === 0) {
-      return returnVector;
+      return;
     } else {
+      let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
       for (const concatVector of concatVectors) {
-        returnVector.concat(concatVector);
+        returnVector = returnVector.concat(concatVector);
       }
       return returnVector;
     }
   }
 
+  /**
+   * Replaces the section of the existing vector with the time period for the new vector
+   * @param timeSeriesVector The new time series vector that will be used to replace the existing
+   * @returns A new Vector
+   */
   public replace(timeSeriesVector: Vector<ValueType>): Vector<ValueType> {
     // If the vector that comes in is empty, then just return what we have, there is nothing to replace
     if (timeSeriesVector.timestamps.length === 0) {
-      return this;
+      return this.deepClone();
     }
 
-    // If the original vector is empty, return the new vector.
-    if (this.timestamps.length === 0) {
-      return timeSeriesVector;
-    }
-    const foundStartIndex = forwardFindIndex(this.timestamps, timeSeriesVector.timestamps[0], IndexMode.Exclusive);
+    const startIndex = forwardFindIndex(this.timestamps, timeSeriesVector.timestamps[0], IndexMode.Exclusive);
+    const adjustedStartIndex = startIndex === null ? 0 : startIndex + 1;
 
-    const foundEndIndex = forwardFindIndex(
+    const endIndex = forwardFindIndex(
       this.timestamps,
       timeSeriesVector.timestamps[timeSeriesVector.timestamps.length - 1],
       IndexMode.DiscontinuityInclusive
     );
+    const adjustedEndIndex = endIndex === null ? this.timestamps.length : endIndex + 1;
 
     // Replace it in the middle
-    return this.slice(0, foundStartIndex === null ? 0 : foundStartIndex + 1)
-      .concat(timeSeriesVector)
-      .concat(this.slice(foundEndIndex + 1 ?? this.timestamps.length));
+    return this.slice(0, adjustedStartIndex).concat(timeSeriesVector).concat(this.slice(adjustedEndIndex));
   }
 
+  /**
+   * Will resample the Vector using the None interpolation method.
+   * This method is "semi-private" as the Vector does not know what it's own interpolation method is
+   * @param targetTimestamps The timestamps that we will resample to
+   * @returns A new Vector
+   */
   public _resampleNone(targetTimestamps: TimestampsClass): Vector<ValueType> {
-    const vector = new Vector<ValueType>(targetTimestamps.length);
-    vector.timestamps = targetTimestamps;
+    const returnVector = new Vector<ValueType>({ dataType: this.values, length: targetTimestamps.length });
+    returnVector.timestamps = targetTimestamps;
+    returnVector.setBad();
     let objectIndex = 0;
     let targetIndex = 0;
     let found: boolean;
@@ -375,17 +506,18 @@ export class Vector<ValueType extends ValueArrayType> {
       }
 
       // The current object timestamp is the one we need to use
-      this._setResampleValue(found, objectIndex, vector.values as ValueType, vector.statuses);
+      this._setResampleValue(found, objectIndex, targetIndex, returnVector.values as ValueType, returnVector.statuses);
 
       targetIndex++;
     }
 
-    return vector;
+    return returnVector;
   }
 
   public _resamplePrevious(targetTimestamps: TimestampsClass): Vector<ValueType> {
-    const vector = new Vector<ValueType>(targetTimestamps.length);
-    vector.timestamps = targetTimestamps;
+    const returnVector = new Vector<ValueType>({ dataType: this.values, length: targetTimestamps.length });
+    returnVector.timestamps = targetTimestamps;
+    returnVector.setBad();
 
     let objectIndex = 0;
     let targetIndex = 0;
@@ -413,17 +545,18 @@ export class Vector<ValueType extends ValueArrayType> {
         }
       }
       // The current object timestamp is the one we need to use
-      this._setResampleValue(found, objectIndex, vector.values as ValueType, vector.statuses);
+      this._setResampleValue(found, objectIndex, targetIndex, returnVector.values as ValueType, returnVector.statuses);
 
       targetIndex++;
     }
 
-    return vector;
+    return returnVector;
   }
 
   public _resampleNext(targetTimestamps: TimestampsClass): Vector<ValueType> {
-    const vector = new Vector<ValueType>(targetTimestamps.length);
-    vector.timestamps = targetTimestamps;
+    const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
+    returnVector.timestamps = targetTimestamps;
+    returnVector.setBad();
 
     let objectIndex = 0;
     let targetIndex = 0;
@@ -451,32 +584,34 @@ export class Vector<ValueType extends ValueArrayType> {
       }
 
       // The current object timestamp is the one we need to use
-      this._setResampleValue(found, objectIndex, vector.values as ValueType, vector.statuses);
+      this._setResampleValue(found, objectIndex, targetIndex, returnVector.values as ValueType, returnVector.statuses);
       targetIndex++;
     }
 
-    return vector;
+    return returnVector;
   }
 
   private _setResampleValue(
     found: boolean,
-    indexObjectTs: number,
+    objectIndex: number,
+    targetIndex: number,
     targetValues: ValueType,
     targetStatuses: StatusesClass
   ) {
     if (found) {
-      targetValues[indexObjectTs] = this.values[indexObjectTs];
-      targetStatuses[indexObjectTs] = this.statuses[indexObjectTs];
+      targetValues[targetIndex] = this.values[objectIndex];
+      targetStatuses[targetIndex] = this.statuses[objectIndex];
     } else {
       // We did not find a match
-      targetValues[indexObjectTs] = null;
-      targetStatuses[indexObjectTs] = Severity.Bad;
+      targetValues[targetIndex] = NaN;
+      targetStatuses[targetIndex] = Severity.Bad;
     }
   }
 
   public _resampleLinear(targetTimestamps: TimestampsClass): Vector<ValueType> {
-    const vector = new Vector<ValueType>(targetTimestamps.length);
-    vector.timestamps = targetTimestamps;
+    const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
+    returnVector.timestamps = targetTimestamps;
+    returnVector.setBad();
 
     let objectIndex = 0;
     let targetIndex = 0;
@@ -511,30 +646,32 @@ export class Vector<ValueType extends ValueArrayType> {
       // Now the next object timestamp is the one we need to use
       if (found) {
         if (this.timestamps[objectIndex + 1] === undefined) {
-          vector.values[targetIndex] = this.values[objectIndex];
-          vector.statuses[targetIndex] = this.statuses[objectIndex];
+          returnVector.values[targetIndex] = this.values[objectIndex];
+          returnVector.statuses[targetIndex] = this.statuses[objectIndex];
         } else {
-          vector.values[targetIndex] =
+          returnVector.values[targetIndex] =
             (this.values[objectIndex] as number) +
             (((this.values[objectIndex + 1] as number) - (this.values[objectIndex] as number)) *
               (targetTimestamps[targetIndex].valueOf() - this.timestamps[objectIndex].valueOf())) /
               (this.timestamps[objectIndex + 1].valueOf() - this.timestamps[objectIndex].valueOf());
-          vector.statuses[targetIndex] =
+          returnVector.statuses[targetIndex] =
             this.statuses[objectIndex] > this.statuses[objectIndex + 1]
               ? this.statuses[objectIndex]
               : this.statuses[objectIndex + 1];
         }
       } else {
-        vector.values[targetIndex] = null;
-        vector.values[targetIndex] = Severity.Bad;
+        returnVector.values[targetIndex] = NaN;
+        returnVector.statuses[targetIndex] = Severity.Bad;
       }
 
       targetIndex++;
     }
 
-    return vector;
+    return returnVector;
   }
 }
 
-export let FloatDataType: Float64Array;
-export let BooleanDataType: Uint8Array;
+export const FloatDataType = new Float64Array();
+export const BooleanDataType = new Uint8Array();
+export const StringDataType: string[] = [];
+export const ObjectDataType: object[] = [];

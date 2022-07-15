@@ -4,7 +4,6 @@ export * from './interpolation-method.js';
 export * from './datatype.js';
 export * from './time-entry.js';
 export * from './time-segment.js';
-export * from './values.js';
-export * from './time-series-vector.js';
+export * from './vector.js';
 export * from './find-index.js';
 export * from './slice-mode.js';

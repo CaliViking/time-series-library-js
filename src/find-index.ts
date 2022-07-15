@@ -30,11 +30,16 @@ function compare(value: number, target: number): CompareReturn {
 
 /**
  * Returns an index value representing the found target
+ * @param sortedArray The array that you are looking in
  * @param target The value that you are looking for
  * @param mode The type of search
  * @returns The found index number
  */
-export function forwardFindIndex(sortedArray: number[], target: number, mode: IndexMode = IndexMode.Exclusive): number {
+export function forwardFindIndex(
+  sortedArray: Float64Array,
+  target: number,
+  mode: IndexMode = IndexMode.Exclusive
+): number {
   /** The minimum edge of the window where the function is looking for the value */
   let valueCursorMin = 0;
   /** The maximum edge of the window where the function is looking for the value */
@@ -144,7 +149,11 @@ export function forwardFindIndex(sortedArray: number[], target: number, mode: In
  * @param mode The type of search
  * @returns The found index number
  */
-export function reverseFindIndex(sortedArray: number[], target: number, mode: IndexMode = IndexMode.Exclusive): number {
+export function reverseFindIndex(
+  sortedArray: Float64Array,
+  target: number,
+  mode: IndexMode = IndexMode.Exclusive
+): number {
   /** The minimum edge of the window where the function is looking for the value */
   let valueCursorMin = 0;
   /** The maximum edge of the window where the function is looking for the value */

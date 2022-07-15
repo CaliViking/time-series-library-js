@@ -60,37 +60,47 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
 
   public validate(): boolean {
     // Array lengths
-    const arraySizeOK: boolean = this.vector.validate();
+    if (this.vector) {
+      const arraySizeOK: boolean = this.vector.validate();
 
-    // interpolation methods and data types
-    let interpolationMethodOK = false;
-    if (this.interpolationMethod === undefined) {
-      interpolationMethodOK = false;
-    } else {
-      switch (whatsMyType(this.vector.dataType)) {
-        case 'Float64Array':
-          interpolationMethodOK = true;
-          break;
-        case 'Uint32Array':
-        case 'Array':
-          if (this.interpolationMethod === InterpolationMethod.linear) {
-            interpolationMethodOK = false;
-          } else {
+      // interpolation methods and data types
+      let interpolationMethodOK = false;
+      if (this.interpolationMethod === undefined) {
+        interpolationMethodOK = false;
+      } else {
+        switch (whatsMyType(this.vector.values)) {
+          case 'Float64Array':
             interpolationMethodOK = true;
-          }
-          break;
+            break;
+          case 'Uint32Array':
+          case 'Array':
+            if (this.interpolationMethod === InterpolationMethod.linear) {
+              interpolationMethodOK = false;
+            } else {
+              interpolationMethodOK = true;
+            }
+            break;
+        }
       }
-    }
 
-    return arraySizeOK && interpolationMethodOK;
+      return arraySizeOK && interpolationMethodOK;
+    } else {
+      return false;
+    }
   }
 
   public clone(): TimeSeriesPath<ValueType> {
-    return Object.create(this);
+    const returnTimeSeriesPath = new TimeSeriesPath<ValueType>(this.interpolationMethod);
+    Object.assign(returnTimeSeriesPath, { ...this });
+    returnTimeSeriesPath.vector = this.vector;
+    return returnTimeSeriesPath;
   }
 
   public deepClone(): TimeSeriesPath<ValueType> {
-    return structuredClone(this);
+    const returnTimeSeriesPath = new TimeSeriesPath<ValueType>(this.interpolationMethod);
+    Object.assign(returnTimeSeriesPath, structuredClone(this));
+    returnTimeSeriesPath.vector = this.vector.deepClone();
+    return returnTimeSeriesPath;
   }
 
   public setTimeVector(
@@ -108,7 +118,7 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
   }
 
   public setTimeEntriesArray(timeEntries: TimeEntryArray[]): TimeSeriesPath<ValueType> {
-    this.vector = Vector.fromTimeEntriesArray(timeEntries) as Vector<ValueType>;
+    this.vector = Vector.fromTimeEntryArrays(timeEntries) as Vector<ValueType>;
     return this;
   }
 
@@ -227,6 +237,8 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
 
   private arithmeticOperator(operator: string, arg: unknown): TimeSeriesPath<Float64Array> {
     let returnTimeSeriesPeriod: TimeSeriesPath<Float64Array>;
+    const argType = whatsMyType(arg);
+    const vectorType = whatsMyType((arg as TimeSeriesPath<ValueArrayType>).vector?.values);
     switch (typeof arg) {
       case 'boolean':
       case 'number':
@@ -238,8 +250,8 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       case 'object': {
         if (arg === null) {
           returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, arg);
-        } else if (arg instanceof TimeSeriesPath) {
-          returnTimeSeriesPeriod = this.arithmeticOperatorTS(operator, arg);
+        } else if (argType === 'TimeSeriesPath' && vectorType === 'Float64Array') {
+          returnTimeSeriesPeriod = this.arithmeticOperatorTS(operator, arg as TimeSeriesPath<Float64Array>);
         } else {
           throw new Error(`Unexpected arg ${arg}`);
         }
@@ -281,49 +293,51 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
   }
 
   private arithmeticOperatorScalar(operator: string, arg: unknown): TimeSeriesPath<Float64Array> {
-    let thisTimeSeriesPeriod: TimeSeriesPath<Float64Array>; // = this.deepClone();
+    const thisTimeSeriesPeriod = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
+    thisTimeSeriesPeriod.vector = new Vector<Float64Array>({
+      dataType: FloatDataType,
+      length: this.vector.timestamps.length,
+    });
+    thisTimeSeriesPeriod.vector.timestamps.set(this.vector.timestamps);
 
     if (arg === null) {
-      thisTimeSeriesPeriod = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
-      thisTimeSeriesPeriod.vector.timestamps.set(this.vector.timestamps);
-      thisTimeSeriesPeriod.vector = thisTimeSeriesPeriod.vector.setBad();
+      thisTimeSeriesPeriod.vector.setBad();
     } else {
       // Arithmetic operators
       switch (operator) {
         case '+': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) + (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) + (arg as number);
           }
           break;
         }
         case '-': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) - (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) - (arg as number);
           }
           break;
         }
         case '*': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) * (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) * (arg as number);
           }
           break;
         }
         case '/': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) / (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) / (arg as number);
           }
           break;
         }
         case '**': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] =
-              (thisTimeSeriesPeriod.vector.values[i] as number) ** (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) ** (arg as number);
           }
           break;
         }
         case '%': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) % (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) % (arg as number);
           }
           break;
         }
@@ -344,13 +358,14 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       // Comparison operator
       switch (operator) {
         case '<': {
-          thisTimeSeriesPeriod.vector = new Vector<Uint8Array>(
-            BooleanDataType,
-            thisTimeSeriesPeriod.vector.timestamps.length
-          ); // dataType = DataType.boolean;
+          thisTimeSeriesPeriod.vector = new Vector<Uint8Array>({
+            dataType: BooleanDataType,
+            length: thisTimeSeriesPeriod.vector.timestamps.length,
+          }); // dataType = DataType.boolean;
           thisTimeSeriesPeriod.interpolationMethod = InterpolationMethod.previous;
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (thisTimeSeriesPeriod.vector.values[i] as number) < (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] =
+              (thisTimeSeriesPeriod.vector.values[i] as number) < (arg as number) ? 1 : 0;
           }
           break;
         }
@@ -364,14 +379,9 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     const returnTimeSeriesPath = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
 
     // Create a unique array of all the timestamps
-    const targetTimestamps: TimestampsClass = Object.assign(
-      new TimestampsClass(),
-      TimestampsClass.from([
-        ...new Set(this.vector.timestamps.combine(arg.vector.timestamps).sort((a, b) => a.valueOf() - b.valueOf())),
-      ])
-    );
+    const targetTimestamps: TimestampsClass = this.vector.timestamps.combine(arg.vector.timestamps);
     // Arithmetic Operators only work on numbers
-    const targetVector = new Vector<Float64Array>(FloatDataType, targetTimestamps.length);
+    const targetVector = new Vector<Float64Array>({ dataType: FloatDataType, length: targetTimestamps.length });
     targetVector.timestamps = targetTimestamps;
 
     const thisTimeSeriesPeriod = this.resample(targetTimestamps);
@@ -528,6 +538,9 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     method: string,
     timeSeriesPeriods: TimeSeriesPath<ValueType>[]
   ): TimeSeriesPath<ValueType> {
+    if (timeSeriesPeriods.length === 0) {
+      throw Error('cannot pass 0 length array to aggregate function');
+    }
     let targetTimestamps: TimestampsClass = new TimestampsClass();
     const interimTimeSeriesPeriods: TimeSeriesPath<ValueType>[] = [];
     const returnTimeSeriesPeriod: TimeSeriesPath<ValueType> = new TimeSeriesPath<ValueType>(InterpolationMethod.linear);
@@ -537,13 +550,13 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       targetTimestamps = targetTimestamps.combine(timeSeriesPeriod.vector.timestamps);
     }
 
-    const vector = new Vector(FloatDataType, targetTimestamps.length);
-    vector.timestamps = targetTimestamps;
-
-    // Resample
+    // Resample all the time Series Periods
     for (const timeSeriesPeriod of timeSeriesPeriods) {
       interimTimeSeriesPeriods.push(timeSeriesPeriod.resample(targetTimestamps));
     }
+
+    const vector = new Vector({ dataType: timeSeriesPeriods[0].vector.values, length: targetTimestamps.length });
+    vector.timestamps = targetTimestamps;
 
     switch (method) {
       case 'sum': {
@@ -582,13 +595,14 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       }
       case 'min': {
         for (let timeIndex = 0; timeIndex < vector.timestamps.length; timeIndex++) {
-          let aggValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex];
+          let aggValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex] as number;
           let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
-            aggValue =
+            aggValue = (
               (interimTimeSeriesPeriod.vector.values[timeIndex] as number) < (aggValue as number)
                 ? interimTimeSeriesPeriod.vector.values[timeIndex]
-                : aggValue;
+                : aggValue
+            ) as number;
             aggStatus =
               aggStatus > interimTimeSeriesPeriod.vector.statuses[timeIndex]
                 ? aggStatus
@@ -601,13 +615,15 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       }
       case 'max': {
         for (let timeIndex = 0; timeIndex < vector.timestamps.length; timeIndex++) {
-          let aggValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex];
+          let aggValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex] as number;
           let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggValue = // If aggValue is undefined, then take the first value, else take the max value
-              (interimTimeSeriesPeriod.vector.values[timeIndex] as number) > (aggValue as number)
-                ? interimTimeSeriesPeriod.vector.values[timeIndex]
-                : aggValue;
+              (
+                (interimTimeSeriesPeriod.vector.values[timeIndex] as number) > (aggValue as number)
+                  ? interimTimeSeriesPeriod.vector.values[timeIndex]
+                  : aggValue
+              ) as number;
             aggStatus =
               aggStatus < interimTimeSeriesPeriod.vector.statuses[timeIndex]
                 ? aggStatus
@@ -620,18 +636,22 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       }
       case 'range': {
         for (let timeIndex = 0; timeIndex < vector.timestamps.length; timeIndex++) {
-          let aggMinValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex];
-          let aggMaxValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex];
+          let aggMinValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex] as number;
+          let aggMaxValue: number = interimTimeSeriesPeriods[0].vector.values[timeIndex] as number;
           let aggStatus = Severity.Good;
           for (const interimTimeSeriesPeriod of interimTimeSeriesPeriods) {
             aggMinValue = // If aggValue is undefined, then take the first value, else take the min value
-              (interimTimeSeriesPeriod.vector.values[timeIndex] as number) < (aggMinValue as number)
-                ? interimTimeSeriesPeriod.vector.values[timeIndex]
-                : aggMinValue;
+              (
+                (interimTimeSeriesPeriod.vector.values[timeIndex] as number) < (aggMinValue as number)
+                  ? interimTimeSeriesPeriod.vector.values[timeIndex]
+                  : aggMinValue
+              ) as number;
             aggMaxValue = // If aggValue is undefined, then take the first value, else take the max value
-              (interimTimeSeriesPeriod.vector.values[timeIndex] as number) > (aggMaxValue as number)
-                ? interimTimeSeriesPeriod.vector.values[timeIndex]
-                : aggMaxValue;
+              (
+                (interimTimeSeriesPeriod.vector.values[timeIndex] as number) > (aggMaxValue as number)
+                  ? interimTimeSeriesPeriod.vector.values[timeIndex]
+                  : aggMaxValue
+              ) as number;
             aggStatus =
               aggStatus > interimTimeSeriesPeriod.vector.statuses[timeIndex]
                 ? aggStatus

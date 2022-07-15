@@ -1,7 +1,5 @@
-import { Severity } from './severity.js';
-
 /**  t = timestamp, v = value, s = severity */
-export type TimeEntry = { t: number; v: unknown; s?: Severity };
+export type TimeEntry = { t: number; v: unknown; s?: number };
 /** Extends TimeEntry, id = sourceId  */
 export type NamedTimeEntry = { id: string } & TimeEntry;
 /** Array containing [timestamp, value, status code] */

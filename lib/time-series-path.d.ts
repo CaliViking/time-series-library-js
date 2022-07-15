@@ -1,21 +1,9 @@
 import { InterpolationMethod } from './interpolation-method.js';
-import { DataType } from './datatype.js';
-import { Values } from './values.js';
-import { TimeEntry } from './time-entry.js';
-import { TimeSegment } from './time-segment.js';
-import { Severity } from './severity.js';
-import { TimeSeriesVector } from './time-series-vector.js';
-interface Samplable {
-    mutableResample(targetTimestamps: number[]): TimeSeriesPath;
-}
-export declare class TimeSeriesPath implements Samplable {
-    dataType: DataType;
+import { TimeEntry, TimeEntryArray } from './time-entry.js';
+import { StatusesClass, TimestampsClass, ValueArrayType, Vector } from './vector.js';
+export declare class TimeSeriesPath<ValueType extends ValueArrayType> {
     interpolationMethod: InterpolationMethod;
-    timestamps: number[];
-    values: unknown[];
-    statuses: Severity[];
-    startTimestamp?: number;
-    endTimestamp?: number;
+    vector: Vector<ValueType>;
     quantityKind?: string;
     measurementUnit?: string;
     measurementUnitMultiplier?: number;
@@ -25,43 +13,33 @@ export declare class TimeSeriesPath implements Samplable {
     expression?: string;
     error?: Error;
     hint?: string;
-    constructor(dataType: DataType, interpolationMethod: InterpolationMethod, startTimestamp?: number, endTimestamp?: number, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
+    constructor(interpolationMethod: InterpolationMethod, quantityKind?: string, measurementUnit?: string, measurementUnitMultiplier?: number, measurementUnitOffset?: number, name?: string, description?: string, expression?: string);
     validate(): boolean;
-    clone(): TimeSeriesPath;
-    deepClone(): TimeSeriesPath;
-    setTimeVector(timestamps: number[], values: Values, statuses?: Severity[]): TimeSeriesPath;
-    setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath;
+    clone(): TimeSeriesPath<ValueType>;
+    deepClone(): TimeSeriesPath<ValueType>;
+    setTimeVector(timestamps: TimestampsClass, values: ValueType, statuses?: StatusesClass): TimeSeriesPath<ValueType>;
+    setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath<ValueType>;
+    setTimeEntriesArray(timeEntries: TimeEntryArray[]): TimeSeriesPath<ValueType>;
     getTimeEntries(): TimeEntry[];
-    setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath;
-    getTimeSegments(): TimeSegment[];
-    private _resampleNone;
-    private _resamplePrevious;
-    private _resampleNext;
-    private _setResampleValue;
-    protected _resampleLinear(targetTimestamps: number[]): TimeSeriesPath;
-    mutableResample(targetTimestamps: number[]): TimeSeriesPath;
-    resample(targetTimestamps: number[]): TimeSeriesPath;
-    private operator;
-    private operatorScalar;
-    private operatorTS;
-    add(arg: unknown): TimeSeriesPath;
-    subtract(arg: unknown): TimeSeriesPath;
-    multiply(arg: unknown): TimeSeriesPath;
-    divide(arg: unknown): TimeSeriesPath;
-    pow(arg: unknown): TimeSeriesPath;
-    remainder(arg: unknown): TimeSeriesPath;
-    lt(arg: unknown): TimeSeriesPath;
-    negate(): TimeSeriesPath;
-    /**
-     * Extracts the time series vector from the path
-     * @returns A new time series vector with timestamps, statuses, and timestamps
-     */
-    toTimeSeriesVector(): TimeSeriesVector;
+    mutableResample(targetTimestamps: TimestampsClass): TimeSeriesPath<ValueType>;
+    resample(targetTimestamps: TimestampsClass): TimeSeriesPath<ValueType>;
+    private arithmeticOperator;
+    private comparisonOperator;
+    private arithmeticOperatorScalar;
+    private comparisonOperatorScalar;
+    private arithmeticOperatorTS;
+    add(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    subtract(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    multiply(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    divide(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    pow(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    remainder(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array>;
+    lt(arg: number | TimeSeriesPath<Float64Array>): TimeSeriesPath<Uint8Array>;
+    negate(): TimeSeriesPath<ValueType>;
     private static aggregate;
-    static sum(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
-    static avg(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
-    static min(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
-    static max(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
-    static range(timeSeriesPeriods: TimeSeriesPath[]): TimeSeriesPath;
+    static sum(timeSeriesPeriods: TimeSeriesPath<Float64Array>[]): TimeSeriesPath<Float64Array>;
+    static avg(timeSeriesPeriods: TimeSeriesPath<Float64Array>[]): TimeSeriesPath<Float64Array>;
+    static min(timeSeriesPeriods: TimeSeriesPath<Float64Array>[]): TimeSeriesPath<Float64Array>;
+    static max(timeSeriesPeriods: TimeSeriesPath<Float64Array>[]): TimeSeriesPath<Float64Array>;
+    static range(timeSeriesPeriods: TimeSeriesPath<Float64Array>[]): TimeSeriesPath<Float64Array>;
 }
-export {};

@@ -7,3 +7,4 @@ export * from './time-segment.js';
 export * from './vector.js';
 export * from './find-index.js';
 export * from './slice-mode.js';
+export * from './what-is-my-type.js';

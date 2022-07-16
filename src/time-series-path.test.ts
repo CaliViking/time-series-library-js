@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { InterpolationMethod } from './interpolation-method.js';
 import { Severity } from './severity.js';
 import { TimeSeriesPath } from './time-series-path.js';
-import { FloatDataType, StatusesClass, TimestampsClass, ValueArrayType, Vector } from './vector.js';
+import { NumberDataType, StatusesClass, TimestampsClass, ValueArrayType, Vector } from './vector.js';
 import { whatsMyType } from './what-is-my-type.js';
 
 describe('time-series-path', function () {
@@ -22,7 +22,7 @@ describe('time-series-path', function () {
   describe('TimeSeriesPath', function () {
     describe('construct', function () {
       const testPeriod = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
-      testPeriod.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod.vector = new Vector({ dataType: NumberDataType, length: 0 });
       test('should return number for dataType', function () {
         expect(whatsMyType(testPeriod.vector.values)).toBe('Float64Array');
       });
@@ -32,23 +32,23 @@ describe('time-series-path', function () {
     });
     describe('validate()', function () {
       const testPeriod = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
-      testPeriod.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod.vector = new Vector({ dataType: NumberDataType, length: 0 });
       test('should return true for validate()', function () {
         expect(testPeriod.validate()).toBe(true);
       });
     });
     describe('clone()', function () {
       const testPeriod = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
-      testPeriod.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod.vector = new Vector({ dataType: NumberDataType, length: 0 });
       test('should clone', function () {
         expect(testPeriod.clone()).toEqual(testPeriod);
       });
     });
     describe('not clone()', function () {
       const testPeriod = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
-      testPeriod.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod.vector = new Vector({ dataType: NumberDataType, length: 0 });
       const testPeriod2 = testPeriod.clone();
-      testPeriod2.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod2.vector = new Vector({ dataType: NumberDataType, length: 0 });
       beforeAll(function () {
         testPeriod2.name = 'Fred';
       });
@@ -58,7 +58,7 @@ describe('time-series-path', function () {
     });
     describe('deepClone()', function () {
       const testPeriod = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
-      testPeriod.vector = new Vector({ dataType: FloatDataType, length: 0 });
+      testPeriod.vector = new Vector({ dataType: NumberDataType, length: 0 });
       test('should deepClone', function () {
         expect(testPeriod.deepClone()).toEqual(testPeriod);
       });

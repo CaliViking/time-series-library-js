@@ -34,21 +34,29 @@ export class StatusesClass extends Uint32Array {}
 /**
  * UInt8Array is for boolean
  */
-export type ValueArrayType = Uint32Array | Float64Array | Uint8Array | string[] | object[] | boolean[];
+export type ValueArrayType = Uint32Array | Float64Array | Uint8Array | string[] | object[];
 
-interface VectorInterface {
-  length: number;
-  concat(vector: VectorInterface): VectorInterface;
-  slice(start: number, end?: number): VectorInterface;
-  portion(portionSize: number): VectorInterface[];
-}
-
+/**
+ * A Vector is a combination of timestamps, values and status codes in one object.
+ * Vectors pivots the traditional thinking of a row per point with timestamps, value, status.
+ *
+ * The advantages of vectors are:
+ * * The ability to use Javascript ArrayTypes for timestamps, values, and status codes. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+ * * ArrayTypes brings: Lower memory usage, Faster execution of code, and Faster serialization to files
+ *
+ * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
+ */
 export class Vector<ValueType extends ValueArrayType> {
   timestamps: TimestampsClass;
   values: ValueType;
   statuses: StatusesClass;
   dataType: ValueType;
 
+  /**
+   * Creates a new Vector.
+   * @param config An object that contains: 1. a variable with the data type you want the values array to represent (Float64Array, Uint32Array, Uint8Array, string[], object[], etc).
+   * Often represented using the constants NumberDataType, BooleanDataType, StringDataType, ObjectDataType. 2. The length of the Vector.
+   */
   constructor(config?: { dataType: ValueType; length: number }) {
     if (config) {
       this.timestamps = new TimestampsClass(config.length);
@@ -72,12 +80,20 @@ export class Vector<ValueType extends ValueArrayType> {
     }
   }
 
+  /**
+   * Creates a completely new Vector that is value-wise identical to the original Vector but share no objects.
+   * @returns A new Vector
+   */
   public deepClone(): Vector<ValueType> {
     const returnVector = new Vector<ValueType>({ dataType: this.values, length: this.timestamps.length });
     returnVector.set(this);
     return returnVector;
   }
 
+  /**
+   * Copies the values across from one Vector to this Vector
+   * @param vector The Vector that the current Vector will be set to match.
+   */
   public set(vector: Vector<ValueType>): void {
     this.timestamps.set(vector.timestamps);
     this.statuses.set(vector.statuses);
@@ -100,6 +116,10 @@ export class Vector<ValueType extends ValueArrayType> {
         throw Error(`Invalid dataType ${whatsMyType(vector.values)}`);
     }
   }
+
+  /**
+   * Validates that the Vector is valid
+   */
   public validate(): boolean {
     // Array lengths
     return (
@@ -108,6 +128,11 @@ export class Vector<ValueType extends ValueArrayType> {
     );
   }
 
+  /**
+   * This will create new elements on an existing Vector. Used to reset the Vector.
+   * @param length The lengths of the array elements
+   * @returns
+   */
   public createElements(length: number): Vector<ValueType> {
     this.timestamps = new TimestampsClass(length);
     switch (whatsMyType(this.values)) {
@@ -213,7 +238,7 @@ export class Vector<ValueType extends ValueArrayType> {
 
     switch (whatsMyType(timeEntries[0].v)) {
       case 'Number':
-        returnVector = new Vector<Float64Array>({ dataType: FloatDataType, length: timeEntries.length });
+        returnVector = new Vector<Float64Array>({ dataType: NumberDataType, length: timeEntries.length });
         break;
       case 'String':
         returnVector = new Vector<string[]>({ dataType: StringDataType, length: timeEntries.length });
@@ -249,7 +274,7 @@ export class Vector<ValueType extends ValueArrayType> {
 
     switch (whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])) {
       case 'Number':
-        returnVector = new Vector({ dataType: FloatDataType, length: timeEntryArrays.length });
+        returnVector = new Vector({ dataType: NumberDataType, length: timeEntryArrays.length });
         break;
       case 'String':
         returnVector = new Vector({ dataType: StringDataType, length: timeEntryArrays.length });
@@ -671,7 +696,7 @@ export class Vector<ValueType extends ValueArrayType> {
   }
 }
 
-export const FloatDataType = new Float64Array();
+export const NumberDataType = new Float64Array();
 export const BooleanDataType = new Uint8Array();
 export const StringDataType: string[] = [];
 export const ObjectDataType: object[] = [];

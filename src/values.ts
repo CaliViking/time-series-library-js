@@ -1,5 +1,5 @@
-export type ValuesType = number[] | string[] | boolean[] | object[] | unknown[];
-export type ValueType = number | string | boolean | object | unknown;
+export type ValuesType = number[] | string[] | boolean[] | object[];
+export type ValueType = number | string | boolean | object;
 
 /**
  * Float64Array is for numbers

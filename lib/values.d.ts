@@ -1,5 +1,5 @@
-export declare type ValuesType = number[] | string[] | boolean[] | object[] | unknown[];
-export declare type ValueType = number | string | boolean | object | unknown;
+export declare type ValuesType = number[] | string[] | boolean[] | object[];
+export declare type ValueType = number | string | boolean | object;
 /**
  * Float64Array is for numbers
  * UInt8Array is for boolean

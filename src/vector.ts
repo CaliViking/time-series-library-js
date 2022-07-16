@@ -50,7 +50,6 @@ export class Vector<ValueType extends ValueArrayType> {
   timestamps: TimestampsClass;
   values: ValueType;
   statuses: StatusesClass;
-  dataType: ValueType;
 
   /**
    * Creates a new Vector.
@@ -238,16 +237,16 @@ export class Vector<ValueType extends ValueArrayType> {
 
     switch (whatsMyType(timeEntries[0].v)) {
       case 'Number':
-        returnVector = new Vector<Float64Array>({ dataType: NumberDataType, length: timeEntries.length });
+        returnVector = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: timeEntries.length });
         break;
       case 'String':
-        returnVector = new Vector<string[]>({ dataType: StringDataType, length: timeEntries.length });
+        returnVector = new Vector<string[]>({ dataType: StringArrayDataType, length: timeEntries.length });
         break;
       case 'Boolean':
-        returnVector = new Vector<Uint8Array>({ dataType: BooleanDataType, length: timeEntries.length });
+        returnVector = new Vector<Uint8Array>({ dataType: BooleanArrayDataType, length: timeEntries.length });
         break;
       case 'Object':
-        returnVector = new Vector<object[]>({ dataType: ObjectDataType, length: timeEntries.length });
+        returnVector = new Vector<object[]>({ dataType: ObjectArrayDataType, length: timeEntries.length });
         break;
       default:
         throw Error(`Invalid dataType ${whatsMyType(timeEntries[0].v)}`);
@@ -274,16 +273,16 @@ export class Vector<ValueType extends ValueArrayType> {
 
     switch (whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])) {
       case 'Number':
-        returnVector = new Vector({ dataType: NumberDataType, length: timeEntryArrays.length });
+        returnVector = new Vector({ dataType: NumberArrayDataType, length: timeEntryArrays.length });
         break;
       case 'String':
-        returnVector = new Vector({ dataType: StringDataType, length: timeEntryArrays.length });
+        returnVector = new Vector({ dataType: StringArrayDataType, length: timeEntryArrays.length });
         break;
       case 'Boolean':
-        returnVector = new Vector({ dataType: BooleanDataType, length: timeEntryArrays.length });
+        returnVector = new Vector({ dataType: BooleanArrayDataType, length: timeEntryArrays.length });
         break;
       case 'Object':
-        returnVector = new Vector({ dataType: ObjectDataType, length: timeEntryArrays.length });
+        returnVector = new Vector({ dataType: ObjectArrayDataType, length: timeEntryArrays.length });
         break;
       default:
         throw Error(`Invalid dataType ${whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])}`);
@@ -696,7 +695,12 @@ export class Vector<ValueType extends ValueArrayType> {
   }
 }
 
-export const NumberDataType = new Float64Array();
-export const BooleanDataType = new Uint8Array();
-export const StringDataType: string[] = [];
-export const ObjectDataType: object[] = [];
+export const NumberArrayDataType = new Float64Array();
+export const BooleanArrayDataType = new Uint8Array();
+export const StringArrayDataType: string[] = [];
+export const ObjectArrayDataType: object[] = [];
+
+export const NumberDataType = NaN;
+export const BooleanDataType: boolean = null;
+export const StringDataType = '';
+export const ObjectDataType: object = {};

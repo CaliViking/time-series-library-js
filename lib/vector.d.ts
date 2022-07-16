@@ -30,11 +30,10 @@ export declare class Vector<ValueType extends ValueArrayType> {
     timestamps: TimestampsClass;
     values: ValueType;
     statuses: StatusesClass;
-    dataType: ValueType;
     /**
-     *
-     * @param config An object that contains a variable with the data type you want the values array to represent (Float64Array, Uint32Array, Uint8Array, string[], object[], etc).
-     * Often represented using the constants BooleanDataType,
+     * Creates a new Vector.
+     * @param config An object that contains: 1. a variable with the data type you want the values array to represent (Float64Array, Uint32Array, Uint8Array, string[], object[], etc).
+     * Often represented using the constants NumberDataType, BooleanDataType, StringDataType, ObjectDataType. 2. The length of the Vector.
      */
     constructor(config?: {
         dataType: ValueType;
@@ -45,8 +44,20 @@ export declare class Vector<ValueType extends ValueArrayType> {
      * @returns A new Vector
      */
     deepClone(): Vector<ValueType>;
+    /**
+     * Copies the values across from one Vector to this Vector
+     * @param vector The Vector that the current Vector will be set to match.
+     */
     set(vector: Vector<ValueType>): void;
+    /**
+     * Validates that the Vector is valid
+     */
     validate(): boolean;
+    /**
+     * This will create new elements on an existing Vector. Used to reset the Vector.
+     * @param length The lengths of the array elements
+     * @returns
+     */
     createElements(length: number): Vector<ValueType>;
     /**
      * Warning, methods with set in the name change the vector. They are mutable.
@@ -136,7 +147,11 @@ export declare class Vector<ValueType extends ValueArrayType> {
     private _setResampleValue;
     _resampleLinear(targetTimestamps: TimestampsClass): Vector<ValueType>;
 }
-export declare const NumberDataType: Float64Array;
-export declare const BooleanDataType: Uint8Array;
-export declare const StringDataType: string[];
-export declare const ObjectDataType: object[];
+export declare const NumberArrayDataType: Float64Array;
+export declare const BooleanArrayDataType: Uint8Array;
+export declare const StringArrayDataType: string[];
+export declare const ObjectArrayDataType: object[];
+export declare const NumberDataType: number;
+export declare const BooleanDataType: boolean;
+export declare const StringDataType = "";
+export declare const ObjectDataType: object;

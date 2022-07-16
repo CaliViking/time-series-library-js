@@ -11,7 +11,14 @@
 import { InterpolationMethod } from './interpolation-method.js';
 import { TimeEntry, TimeEntryArray } from './time-entry.js';
 import { Severity } from './severity.js';
-import { BooleanDataType, NumberDataType, StatusesClass, TimestampsClass, ValueArrayType, Vector } from './vector.js';
+import {
+  BooleanArrayDataType,
+  NumberArrayDataType,
+  StatusesClass,
+  TimestampsClass,
+  ValueArrayType,
+  Vector,
+} from './vector.js';
 import { whatsMyType } from './what-is-my-type.js';
 
 /*
@@ -295,7 +302,7 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
   private arithmeticOperatorScalar(operator: string, arg: unknown): TimeSeriesPath<Float64Array> {
     const thisTimeSeriesPeriod = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
     thisTimeSeriesPeriod.vector = new Vector<Float64Array>({
-      dataType: NumberDataType,
+      dataType: NumberArrayDataType,
       length: this.vector.timestamps.length,
     });
     thisTimeSeriesPeriod.vector.timestamps.set(this.vector.timestamps);
@@ -359,7 +366,7 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
       switch (operator) {
         case '<': {
           thisTimeSeriesPeriod.vector = new Vector<Uint8Array>({
-            dataType: BooleanDataType,
+            dataType: BooleanArrayDataType,
             length: thisTimeSeriesPeriod.vector.timestamps.length,
           }); // dataType = DataType.boolean;
           thisTimeSeriesPeriod.interpolationMethod = InterpolationMethod.previous;
@@ -381,7 +388,7 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     // Create a unique array of all the timestamps
     const targetTimestamps: TimestampsClass = this.vector.timestamps.combine(arg.vector.timestamps);
     // Arithmetic Operators only work on numbers
-    const targetVector = new Vector<Float64Array>({ dataType: NumberDataType, length: targetTimestamps.length });
+    const targetVector = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: targetTimestamps.length });
     targetVector.timestamps = targetTimestamps;
 
     const thisTimeSeriesPeriod = this.resample(targetTimestamps);

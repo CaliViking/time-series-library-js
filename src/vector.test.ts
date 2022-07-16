@@ -3,7 +3,7 @@ import { forwardFindIndex, reverseFindIndex } from './find-index.js';
 import { IndexMode } from './index-mode.js';
 import { Severity } from './severity.js';
 import { SliceMode } from './slice-mode.js';
-import { Vector, TimestampsClass, ValueArrayType, StatusesClass, NumberDataType } from './vector.js';
+import { Vector, TimestampsClass, ValueArrayType, StatusesClass, NumberArrayDataType } from './vector.js';
 
 describe('Vector', function () {
   describe('forwardFindIndex', function () {
@@ -96,7 +96,7 @@ describe('Vector', function () {
     });
   });
   describe('concat', function () {
-    const testEmptyPeriod1 = new Vector<Float64Array>({ dataType: NumberDataType, length: 0 });
+    const testEmptyPeriod1 = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: 0 });
     let testVector1: Vector<Float64Array>;
     let testVector2: Vector<Float64Array>;
     let testVector3: Vector<Float64Array>;
@@ -210,7 +210,7 @@ describe('Vector', function () {
     });
   });
   describe('replace', function () {
-    const testEmptyPeriod1 = new Vector<Float64Array>({ dataType: NumberDataType, length: 0 });
+    const testEmptyPeriod1 = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: 0 });
     let basePeriod1: Vector<Float64Array>;
     let afterPeriod2: Vector<Float64Array>;
     let lateOverlappingPeriod3: Vector<Float64Array>;

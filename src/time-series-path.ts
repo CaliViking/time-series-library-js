@@ -11,26 +11,18 @@
 import { InterpolationMethod } from './interpolation-method.js';
 import { TimeEntry, TimeEntryArray } from './time-entry.js';
 import { Severity } from './severity.js';
-import {
-  BooleanArrayDataType,
-  NumberArrayDataType,
-  StatusesClass,
-  TimestampsClass,
-  ValueArrayType,
-  Vector,
-} from './vector.js';
+import { StatusArrayClass, TimestampArrayClass, Vector } from './vector.js';
+import { BooleanArrayDataType, ValueArrayType, NumberArrayDataType } from './values.js';
 import { whatsMyType } from './what-is-my-type.js';
+import { ValueType } from './values.js';
 
-/*
- * Some implementation choices:
- * - I have deliberately chosen to use for loops instead of forEach and map/reduce. The reason is primarily performance
- * - I have chosen to use array.push() method to extend arrays. This is due to Google V8 performance. It may be a good idea to use pre-sized arrays instead.
+/**
+ * A rich class representing time series data as a path
  */
-
-export class TimeSeriesPath<ValueType extends ValueArrayType> {
+export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
   //  dataType: DataType;
   interpolationMethod: InterpolationMethod;
-  vector: Vector<ValueType>;
+  vector: Vector<ThisValueType>;
   quantityKind?: string;
   measurementUnit?: string;
   measurementUnitMultiplier?: number;
@@ -65,28 +57,38 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     this.validate();
   }
 
+  /**
+   * Validates the integrity of the object
+   * @returns true if the object is valid, false if it is not
+   */
   public validate(): boolean {
-    // Array lengths
+    // Validate the vector if there is one, otherwise return false
     if (this.vector) {
+      /** The validation of the vector alone */
       const arraySizeOK: boolean = this.vector.validate();
 
-      // interpolation methods and data types
+      // Now validate the vector with regards to interpolation methods and data types
+      /** The interpolation method is OK */
       let interpolationMethodOK = false;
       if (this.interpolationMethod === undefined) {
         interpolationMethodOK = false;
       } else {
         switch (whatsMyType(this.vector.values)) {
           case 'Float64Array':
+            // Float64Array can have any interpolation method
             interpolationMethodOK = true;
             break;
-          case 'Uint32Array':
+          case 'Uint8Array':
           case 'Array':
             if (this.interpolationMethod === InterpolationMethod.linear) {
+              // Other arrays can not have interpolation method linear
               interpolationMethodOK = false;
             } else {
               interpolationMethodOK = true;
             }
             break;
+          default:
+            throw Error(`Invalid data type: ${whatsMyType(this.vector.values)}`);
         }
       }
 
@@ -96,210 +98,212 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     }
   }
 
-  public clone(): TimeSeriesPath<ValueType> {
-    const returnTimeSeriesPath = new TimeSeriesPath<ValueType>(this.interpolationMethod);
+  /**
+   * Creates a shallow copy of the TimeSeriesPath. This is faster, but the objects share properties.
+   * @returns A new TimeSeriesPath
+   */
+  public clone(): TimeSeriesPath<ThisValueType> {
+    const returnTimeSeriesPath = new TimeSeriesPath<ThisValueType>(this.interpolationMethod);
     Object.assign(returnTimeSeriesPath, { ...this });
     returnTimeSeriesPath.vector = this.vector;
     return returnTimeSeriesPath;
   }
 
-  public deepClone(): TimeSeriesPath<ValueType> {
-    const returnTimeSeriesPath = new TimeSeriesPath<ValueType>(this.interpolationMethod);
+  /**
+   * Creates a deep copy of the TimeSeriesPath. This will ensure that all objects are recreated with new objects
+   * @returns A new TimeSeriesPath
+   */
+  public deepClone(): TimeSeriesPath<ThisValueType> {
+    const returnTimeSeriesPath = new TimeSeriesPath<ThisValueType>(this.interpolationMethod);
     Object.assign(returnTimeSeriesPath, structuredClone(this));
     returnTimeSeriesPath.vector = this.vector.deepClone();
     return returnTimeSeriesPath;
   }
 
-  public setTimeVector(
-    timestamps: TimestampsClass,
-    values: ValueType,
-    statuses?: StatusesClass
-  ): TimeSeriesPath<ValueType> {
+  /**
+   * Creates and sets a new vector based on the passed in elements
+   * @param timestamps
+   * @param values
+   * @param statuses
+   * @returns
+   */
+  public newVectorFromElements(
+    timestamps: TimestampArrayClass,
+    values: ThisValueType,
+    statuses?: StatusArrayClass
+  ): TimeSeriesPath<ThisValueType> {
     this.vector = Vector.fromElements(timestamps, values, statuses);
     return this;
   }
 
-  public setTimeEntries(timeEntries: TimeEntry[]): TimeSeriesPath<ValueType> {
-    this.vector = Vector.fromTimeEntries(timeEntries) as Vector<ValueType>;
+  /**
+   * Creates and sets a new vector based on the passed in array of time entries
+   * @param timeEntries
+   * @returns
+   */
+  public newVectorFromTimeEntries(timeEntries: TimeEntry<ValueType>[]): TimeSeriesPath<ThisValueType> {
+    this.vector = Vector.fromTimeEntries(timeEntries) as Vector<ThisValueType>;
     return this;
   }
 
-  public setTimeEntriesArray(timeEntries: TimeEntryArray[]): TimeSeriesPath<ValueType> {
-    this.vector = Vector.fromTimeEntryArrays(timeEntries) as Vector<ValueType>;
+  /**
+   * Creates and sets a new vector based on the passed in array of time entry arrays
+   * @param timeEntryArrays
+   * @returns
+   */
+  public newVectorFromTimeEntryArrays(timeEntryArrays: TimeEntryArray<ValueType>[]): TimeSeriesPath<ThisValueType> {
+    this.vector = Vector.fromTimeEntryArrays(timeEntryArrays) as Vector<ThisValueType>;
     return this;
   }
 
-  public getTimeEntries(): TimeEntry[] {
+  /**
+   *
+   * @returns The current Vector as an array of TimeEntries
+   */
+  public getTimeEntries(): TimeEntry<ValueType>[] {
     return this.vector.getTimeEntries();
   }
 
-  /*  public setTimeSegments(timeSegments: TimeSegment[]): TimeSeriesPath {
-    const timestamps: number[] = [];
-    let values: unknown[];
-    const statuses: Severity[] = [];
-
-    switch (
-      this.dataType // TODO: Is this necessary?
-    ) {
-      case DataType.Date: {
-        values = Array<Date>();
-        break;
-      }
-      case DataType.string: {
-        values = Array<string>();
-        break;
-      }
-      case DataType.number: {
-        values = Array<number>();
-        break;
-      }
-      case DataType.JSON: {
-        values = Array<JSON>();
-        break;
-      }
-      default: {
-        throw new Error(`Unexpected dataType ${this.dataType}`);
-      }
-    }
-
-    for (const timeSegment of timeSegments) {
-      timestamps.push(timeSegment.t1);
-      values.push(timeSegment.v1);
-      statuses.push(timeSegment.s1);
-    }
-
-    // Push the last segment value
-    timestamps.push(timeSegments[timeSegments.length].t2);
-    values.push(timeSegments[timeSegments.length].v2);
-    statuses.push(timeSegments[timeSegments.length].s2);
-
-    this.timestamps = timestamps;
-    this.values = values;
-    this.statuses = statuses;
-
-    return this;
-  }
-*/
-  /*  public getTimeSegments(): TimeSegment[] {
-    const timeSegments: TimeSegment[] = [];
-
-    for (let i = 0; i + 1 < this.timestamps.length; i++) {
-      timeSegments.push({
-        t1: this.timestamps[i],
-        t2: this.timestamps[i + 1],
-        v1: this.values[i],
-        v2: this.values[i + 1],
-        s1: this.statuses[i],
-        s2: this.statuses[i + 1],
-      });
-    }
-
-    return timeSegments;
-  }
-*/
-  public mutableResample(targetTimestamps: TimestampsClass): TimeSeriesPath<ValueType> {
+  /**
+   * Resamples in place an mutilates the current TimeSeriesPath (this)
+   * @param targetTimestamps The timestamps for resampling
+   * @returns The current TimeSeriesPath
+   */
+  public mutableResample(targetTimestamps: TimestampArrayClass): TimeSeriesPath<ThisValueType> {
     switch (this.interpolationMethod) {
       case InterpolationMethod.none: {
-        this.vector = this.vector._resampleNone(targetTimestamps);
+        this.vector = this.vector.resampleNone(targetTimestamps);
         return this;
       }
       case InterpolationMethod.previous: {
-        this.vector = this.vector._resamplePrevious(targetTimestamps);
+        this.vector = this.vector.resamplePrevious(targetTimestamps);
         return;
         this;
       }
       case InterpolationMethod.next: {
-        this.vector = this.vector._resampleNext(targetTimestamps);
+        this.vector = this.vector.resampleNext(targetTimestamps);
         return this;
       }
       case InterpolationMethod.linear: {
-        this.vector = this.vector._resampleLinear(targetTimestamps);
+        this.vector = this.vector.resampleLinear(targetTimestamps);
         return this;
       }
+      default:
+        throw Error(`Unknown interpolation method: ${this.interpolationMethod}`);
     }
   }
 
-  public resample(targetTimestamps: TimestampsClass): TimeSeriesPath<ValueType> {
-    const returnTimeSeriesPeriod: TimeSeriesPath<ValueType> = this.deepClone();
+  /**
+   * Resamples and returns a new TimeSeriesPath (does not mutilate)
+   * @param targetTimestamps The timestamps for resampling
+   * @returns A new TimeSeriesPath
+   */
+  public resample(targetTimestamps: TimestampArrayClass): TimeSeriesPath<ThisValueType> {
+    const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = this.deepClone();
 
     switch (this.interpolationMethod) {
       case InterpolationMethod.none: {
-        returnTimeSeriesPeriod.vector = this.vector._resampleNone(targetTimestamps);
+        returnTimeSeriesPeriod.vector = this.vector.resampleNone(targetTimestamps);
         return returnTimeSeriesPeriod;
       }
       case InterpolationMethod.previous: {
-        returnTimeSeriesPeriod.vector = this.vector._resamplePrevious(targetTimestamps);
+        returnTimeSeriesPeriod.vector = this.vector.resamplePrevious(targetTimestamps);
         return returnTimeSeriesPeriod;
       }
       case InterpolationMethod.next: {
-        returnTimeSeriesPeriod.vector = this.vector._resampleNext(targetTimestamps);
+        returnTimeSeriesPeriod.vector = this.vector.resampleNext(targetTimestamps);
         return returnTimeSeriesPeriod;
       }
       case InterpolationMethod.linear: {
-        returnTimeSeriesPeriod.vector = this.vector._resampleLinear(targetTimestamps);
+        returnTimeSeriesPeriod.vector = this.vector.resampleLinear(targetTimestamps);
         return returnTimeSeriesPeriod;
       }
+      default:
+        throw Error(`Unknown interpolation method: ${this.interpolationMethod}`);
     }
   }
 
-  private arithmeticOperator(operator: string, arg: unknown): TimeSeriesPath<Float64Array> {
+  /**
+   * Performs a Scalar or TimeSeries arithmetic operation on the TimeSeriesPath
+   * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)
+   * @param operand The operand that is used to operate on this
+   * @returns
+   */
+  private arithmeticOperator(
+    operator: string,
+    operand: boolean | number | string | object | TimeSeriesPath<ValueArrayType>
+  ): TimeSeriesPath<Float64Array> {
     let returnTimeSeriesPeriod: TimeSeriesPath<Float64Array>;
-    const argType = whatsMyType(arg);
-    const vectorType = whatsMyType((arg as TimeSeriesPath<ValueArrayType>).vector?.values);
-    switch (typeof arg) {
+    switch (typeof operand) {
       case 'boolean':
       case 'number':
-      case 'bigint':
       case 'string': {
-        returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, arg);
+        returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, operand);
         break;
       }
       case 'object': {
-        if (arg === null) {
-          returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, arg);
+        const argType = whatsMyType(operand);
+        const vectorType = whatsMyType((operand as TimeSeriesPath<ValueArrayType>).vector?.values);
+        if (operand === null) {
+          returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, operand);
         } else if (argType === 'TimeSeriesPath' && vectorType === 'Float64Array') {
-          returnTimeSeriesPeriod = this.arithmeticOperatorTS(operator, arg as TimeSeriesPath<Float64Array>);
+          returnTimeSeriesPeriod = this.arithmeticOperatorTS(operator, operand as TimeSeriesPath<Float64Array>);
         } else {
-          throw new Error(`Unexpected arg ${arg}`);
+          throw Error(`Unexpected argument type ${argType} and vector type ${vectorType}`);
         }
         break;
       }
-      default: {
-        throw new Error(`Unexpected operator ${operator}`);
-      }
+      default:
+        throw Error(`Unexpected type of argument ${typeof operand}`);
     }
     return returnTimeSeriesPeriod;
   }
 
-  private comparisonOperator(operator: string, arg: unknown): TimeSeriesPath<Uint8Array> {
+  /**
+   * Performs a Scalar or TimeSeries comparison operation on the TimeSeriesPath
+   * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)
+   * @param operand The operand that is used to operate on this
+   * @returns
+   */
+  private comparisonOperator(
+    operator: string,
+    operand: boolean | number | string | object | TimeSeriesPath<ValueArrayType>
+  ): TimeSeriesPath<Uint8Array> {
     let returnTimeSeriesPeriod: TimeSeriesPath<Uint8Array>;
-    switch (typeof arg) {
+    switch (typeof operand) {
       case 'boolean':
       case 'number':
-      case 'bigint':
       case 'string': {
-        returnTimeSeriesPeriod = this.comparisonOperatorScalar(operator, arg);
+        returnTimeSeriesPeriod = this.comparisonOperatorScalar(operator, operand);
         break;
       }
       case 'object': {
-        if (arg === null) {
-          returnTimeSeriesPeriod = this.comparisonOperatorScalar(operator, arg);
-        } else if (arg instanceof TimeSeriesPath) {
+        if (operand === null) {
+          returnTimeSeriesPeriod = this.comparisonOperatorScalar(operator, operand);
+        } else if (operand instanceof TimeSeriesPath) {
           throw Error(`function comparisonOperatorTS not implemented`);
           // returnTimeSeriesPeriod = this.comparisonOperatorTS(operator, arg);
         } else {
-          throw new Error(`Unexpected arg ${arg}`);
+          throw Error(`Unexpected arg ${operand}`);
         }
         break;
       }
-      default: {
-        throw new Error(`Unexpected operator ${operator}`);
-      }
+      default:
+        throw Error(`Unexpected type of argument ${typeof operand}`);
     }
     return returnTimeSeriesPeriod;
   }
 
-  private arithmeticOperatorScalar(operator: string, arg: unknown): TimeSeriesPath<Float64Array> {
+  /**
+   * Performs a Scalar arithmetic operation on the TimeSeriesPath
+   * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)
+   * @param operand The operand that is used to operate on this
+   * @returns
+   */
+  private arithmeticOperatorScalar(
+    operator: string,
+    operand: boolean | number | string | object
+  ): TimeSeriesPath<Float64Array> {
     const thisTimeSeriesPeriod = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
     thisTimeSeriesPeriod.vector = new Vector<Float64Array>({
       dataType: NumberArrayDataType,
@@ -307,57 +311,68 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     });
     thisTimeSeriesPeriod.vector.timestamps.set(this.vector.timestamps);
 
-    if (arg === null) {
+    if (operand === null) {
       thisTimeSeriesPeriod.vector.setBad();
     } else {
       // Arithmetic operators
       switch (operator) {
         case '+': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) + (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) + (operand as number);
           }
           break;
         }
         case '-': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) - (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) - (operand as number);
           }
           break;
         }
         case '*': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) * (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) * (operand as number);
           }
           break;
         }
         case '/': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) / (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) / (operand as number);
           }
           break;
         }
         case '**': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) ** (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) ** (operand as number);
           }
           break;
         }
         case '%': {
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) % (arg as number);
+            thisTimeSeriesPeriod.vector.values[i] = (this.vector.values[i] as number) % (operand as number);
           }
           break;
         }
+        default:
+          throw Error(`Unexpected operator ${operator}`);
       }
     }
 
     return thisTimeSeriesPeriod;
   }
 
-  private comparisonOperatorScalar(operator: string, arg: unknown): TimeSeriesPath<Uint8Array> {
+  /**
+   * Performs a Scalar comparison operation on the TimeSeriesPath
+   * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)
+   * @param operand The operand that is used to operate on this
+   * @returns
+   */
+  private comparisonOperatorScalar(
+    operator: string,
+    operand: boolean | number | string | object
+  ): TimeSeriesPath<Uint8Array> {
     let thisTimeSeriesPeriod: TimeSeriesPath<Uint8Array>;
 
-    if (arg === null) {
+    if (operand === null) {
       thisTimeSeriesPeriod = new TimeSeriesPath<Uint8Array>(InterpolationMethod.none);
       thisTimeSeriesPeriod.vector.timestamps.set(this.vector.timestamps);
       thisTimeSeriesPeriod.vector = thisTimeSeriesPeriod.vector.setBad();
@@ -372,27 +387,35 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
           thisTimeSeriesPeriod.interpolationMethod = InterpolationMethod.previous;
           for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
             thisTimeSeriesPeriod.vector.values[i] =
-              (thisTimeSeriesPeriod.vector.values[i] as number) < (arg as number) ? 1 : 0;
+              (thisTimeSeriesPeriod.vector.values[i] as number) < (operand as number) ? 1 : 0;
           }
           break;
         }
+        default:
+          throw Error(`Unexpected operator ${operator}`);
       }
     }
 
     return thisTimeSeriesPeriod;
   }
 
-  private arithmeticOperatorTS(operator: string, arg: TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array> {
+  /**
+   * Performs a Time Series arithmetic operation on the TimeSeriesPath
+   * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)
+   * @param operand The operand that is used to operate on this
+   * @returns
+   */
+  private arithmeticOperatorTS(operator: string, operand: TimeSeriesPath<Float64Array>): TimeSeriesPath<Float64Array> {
     const returnTimeSeriesPath = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
 
     // Create a unique array of all the timestamps
-    const targetTimestamps: TimestampsClass = this.vector.timestamps.combine(arg.vector.timestamps);
+    const targetTimestamps: TimestampArrayClass = this.vector.timestamps.combine(operand.vector.timestamps);
     // Arithmetic Operators only work on numbers
     const targetVector = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: targetTimestamps.length });
     targetVector.timestamps = targetTimestamps;
 
     const thisTimeSeriesPeriod = this.resample(targetTimestamps);
-    const argTimeSeriesPeriod = arg.resample(targetTimestamps);
+    const argTimeSeriesPeriod = operand.resample(targetTimestamps);
 
     switch (operator) {
       case '+': {
@@ -461,6 +484,8 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
         }
         break;
       }
+      default:
+        throw Error(`Unexpected operator ${operator}`);
     }
 
     returnTimeSeriesPath.vector = targetVector;
@@ -496,11 +521,11 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
     return this.comparisonOperator('<', arg);
   }
 
-  public negate(): TimeSeriesPath<ValueType> {
+  public negate(): TimeSeriesPath<ThisValueType> {
     const thisTimeSeriesPeriod = this.deepClone();
     let index = 0;
 
-    for (index = 0; index < (thisTimeSeriesPeriod.vector.values as ValueType).length; index++) {
+    for (index = 0; index < (thisTimeSeriesPeriod.vector.values as ThisValueType).length; index++) {
       thisTimeSeriesPeriod.vector.values[index] = -(thisTimeSeriesPeriod.vector.values[index] as number);
     }
 
@@ -510,47 +535,18 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
   // TODO: Implement map, filter, reduce
   // Ideally this would be aware of interpolation so that it would use an iterated object of segments, or double segments
 
-  //   private static generateCyclicTimeSeriesData(
-  //     startTimestamp: number,
-  //     endTimestamp: number,
-  //     sampleInterval: number,
-  //     shape: 'sine' | 'square' | 'sawtooth' | 'triangle',
-  //     waveLength: number,
-  //     minValue?: number = 0,
-  //     maxValue?: number = 1
-  //   ): TimeSeriesPath {
-  //     // Create an array with all the timestamps
-  //     const numEntries: number = Math.floor((endTimestamp - startTimestamp) / sampleInterval);
-  //     const targetTimestamps: number[] = Array.from(Array(numEntries).keys()).map(
-  //       (index) => index * sampleInterval + startTimestamp
-  //     );
-  //     let targetValues: number[] = Array(numEntries);
-  //     const targetStatuses: Severity[] = Array(numEntries);
-  //     const interimTimeSeriesPeriods: TimeSeriesPath[] = [];
-  //     const returnTimeSeriesPeriod: TimeSeriesPath = new TimeSeriesPath(DataType.number, InterpolationMethod.linear);
-
-  //     switch (shape) {
-  //       case 'sine':
-  //         targetValues = Array.from(targetTimestamps.values()).map((timestamp) =>
-  //           (Math.sin((((timestamp - startTimestamp) % sampleInterval) / sampleInterval) * 2 * Math.PI) + (-1 + minValue))
-  //         );
-  //         break;
-  //       case 'square':
-  //       case 'sawtooth':
-  //       case 'triangle':
-  //     }
-  //   }
-
-  private static aggregate<ValueType extends ValueArrayType>(
+  private static aggregate<ThisValueType extends ValueArrayType>(
     method: string,
-    timeSeriesPeriods: TimeSeriesPath<ValueType>[]
-  ): TimeSeriesPath<ValueType> {
+    timeSeriesPeriods: TimeSeriesPath<ThisValueType>[]
+  ): TimeSeriesPath<ThisValueType> {
     if (timeSeriesPeriods.length === 0) {
       throw Error('cannot pass 0 length array to aggregate function');
     }
-    let targetTimestamps: TimestampsClass = new TimestampsClass();
-    const interimTimeSeriesPeriods: TimeSeriesPath<ValueType>[] = [];
-    const returnTimeSeriesPeriod: TimeSeriesPath<ValueType> = new TimeSeriesPath<ValueType>(InterpolationMethod.linear);
+    let targetTimestamps: TimestampArrayClass = new TimestampArrayClass();
+    const interimTimeSeriesPeriods: TimeSeriesPath<ThisValueType>[] = [];
+    const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = new TimeSeriesPath<ThisValueType>(
+      InterpolationMethod.linear
+    );
 
     // Get all unique timestamps
     for (const timeSeriesPeriod of timeSeriesPeriods) {
@@ -696,36 +692,10 @@ export class TimeSeriesPath<ValueType extends ValueArrayType> {
   }
 
   /*
+    // Combines the existing timestamps and the new timestamps and returns a new object
     public upsample(interval: number | timeSeriesObject | number[] | number[], anchorTimestamp?: number | number): timeSeriesObject {
         return new timeSeriesObject;
     }
 
-    public downsample(interval: number | timeSeriesObject | number[] | number[], anchorTimestamp?: number | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-
-    public aggregate(interval: number | timeSeriesObject | number[] | number[], anchorTimestamp?: number | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-
-    public add(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-
-    public subtract(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-    public multiply(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-    public divide(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-    public floor(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
-    public subtract(right: timeSeriesObject | number): timeSeriesObject {
-        return new timeSeriesObject;
-    }
     */
 }

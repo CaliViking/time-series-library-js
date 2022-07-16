@@ -1,9 +1,16 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { forwardFindIndex, reverseFindIndex } from './find-index.js';
-import { IndexMode } from './index-mode.js';
-import { Severity } from './severity.js';
-import { SliceMode } from './slice-mode.js';
-import { Vector, TimestampsClass, ValueArrayType, StatusesClass, NumberArrayDataType } from './vector.js';
+import {
+  forwardFindIndex,
+  reverseFindIndex,
+  IndexMode,
+  Vector,
+  TimestampArrayClass,
+  ValueArrayType,
+  StatusArrayClass,
+  NumberArrayDataType,
+  Severity,
+  SliceMode,
+} from './index.js';
 
 describe('Vector', function () {
   describe('forwardFindIndex', function () {
@@ -12,9 +19,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
     });
 
@@ -55,9 +62,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
     });
 
@@ -108,23 +115,23 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       // Create testPeriod2 so that it does not overlap testPeriod1
       testVector2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampArrayClass,
         Float64Array.from({ length: arrayLength }, () => 2),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       // Create testPeriod3 so that it does overlap testPeriod1
       testVector3 = Vector.fromElements(
         Float64Array.from(Array(arrayLength)).map(
           (_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10
-        ) as TimestampsClass,
+        ) as TimestampArrayClass,
         Float64Array.from({ length: arrayLength }, () => 4),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
 
       resultVector0 = testEmptyPeriod1.concat(testVector1);
@@ -190,9 +197,9 @@ describe('Vector', function () {
     beforeAll(function () {
       for (let i = 0; i < 5; i++) {
         const tempPeriod = Vector.fromElements(
-          Float64Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10) as TimestampsClass,
+          Float64Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10) as TimestampArrayClass,
           Float64Array.from(Array(arrayLength).keys()),
-          Uint32Array.from({ length: arrayLength }, () => Severity.Good)
+          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
         );
         testPeriods.push(tempPeriod);
       }
@@ -225,31 +232,31 @@ describe('Vector', function () {
 
     beforeAll(function () {
       basePeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       // Create afterPeriod2 so that it does not overlap testPeriod1
       afterPeriod2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampArrayClass,
         Float64Array.from({ length: arrayLength }, () => 2),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
       lateOverlappingPeriod3 = Vector.fromElements(
         Float64Array.from(Array(arrayLength)).map(
           (_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10
-        ) as TimestampsClass,
+        ) as TimestampArrayClass,
         Float64Array.from({ length: arrayLength }, () => 4),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       // Create insidePeriod4 so that it is inside testPeriod1
       insidePeriod4 = Vector.fromElements(
         Float64Array.from(Array(Math.floor(arrayLength / 2))).map(
           (_v, k) => Math.floor(arrayLength / 4) * 10 + k * 10
-        ) as TimestampsClass,
+        ) as TimestampArrayClass,
         Float64Array.from({ length: Math.floor(arrayLength / 2) }, () => 6),
-        Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as StatusesClass
+        Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as StatusArrayClass
       );
       // Create earlyOverlappingPeriod5 so that it does overlap and is before testPeriod1
       // earlyOverlappingPeriod5 = Vector.fromElements(
@@ -257,7 +264,7 @@ describe('Vector', function () {
       //     (_v, k) => -Math.floor(arrayLength / 2) * 10 + k * 10
       //   ) as TimestampsClass,
       //   Float64Array.from({ length: arrayLength }, () => 7),
-      //   Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+      //   StatusesClass.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
       // );
     });
 
@@ -370,9 +377,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
       resultPeriods500 = testPeriod1.portion(500);
       resultPeriods1000 = testPeriod1.portion(1000);
@@ -416,9 +423,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampsClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
         Float64Array.from(Array(arrayLength).keys()),
-        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
+        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
       );
 
       resultIncludeOverflowOnTarget = testPeriod1.sliceTime(1000, 99000, SliceMode.IncludeOverflow);

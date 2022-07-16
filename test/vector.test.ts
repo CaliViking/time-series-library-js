@@ -10,7 +10,7 @@ import {
   NumberArrayDataType,
   Severity,
   SliceMode,
-} from './index.js';
+} from '../src/index.js';
 
 describe('Vector', function () {
   describe('forwardFindIndex', function () {
@@ -222,7 +222,6 @@ describe('Vector', function () {
     let afterPeriod2: Vector<Float64Array>;
     let lateOverlappingPeriod3: Vector<Float64Array>;
     let insidePeriod4: Vector<Float64Array>;
-    // let earlyOverlappingPeriod5: Vector<Float64Array>;
     let resultEmptyPeriod0: Vector<Float64Array>;
     let resultAfterPeriod1: Vector<Float64Array>;
     let resultLateOverlappingPeriod2: Vector<Float64Array>;
@@ -258,14 +257,6 @@ describe('Vector', function () {
         Float64Array.from({ length: Math.floor(arrayLength / 2) }, () => 6),
         Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as StatusArrayClass
       );
-      // Create earlyOverlappingPeriod5 so that it does overlap and is before testPeriod1
-      // earlyOverlappingPeriod5 = Vector.fromElements(
-      //   Float64Array.from(Array(arrayLength)).map(
-      //     (_v, k) => -Math.floor(arrayLength / 2) * 10 + k * 10
-      //   ) as TimestampsClass,
-      //   Float64Array.from({ length: arrayLength }, () => 7),
-      //   StatusesClass.from({ length: arrayLength }, () => Severity.Good) as StatusesClass
-      // );
     });
 
     describe('Replacing basePeriod1 in testEmptyPeriod1', function () {

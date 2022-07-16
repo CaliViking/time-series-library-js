@@ -3,8 +3,8 @@
   "author": "Niels Erik Andersen",
   "description": "A library for managing and processing time series data.",
   "version": "0.1.48",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "license": "CC-BY-NC-4.0",
   "devDependencies": {
@@ -21,7 +21,7 @@
   },
   "scripts": {
     "lint": "eslint --ext tsconfig.json",
-    "build": "rm ./lib -fdr && npx tsc",
+    "build": "rm ./dist -fdr && npx tsc",
     "test": "npx vitest"
   },
   "keywords": [

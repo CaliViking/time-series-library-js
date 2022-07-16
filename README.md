@@ -5,13 +5,13 @@
 Compile:
 
 ```bash
-$ tsc
+$ npm run build
 ```
 
 Run tests:
 
 ```bash
-$ npm test
+$ npm run test
 ```
 
 See how to use the code? Take a look in the [unit test file](./test/time-series-path-test.js) (even though it is quite abstract)
@@ -109,7 +109,7 @@ The library is built on the following approaches:
 
 Here is an example of how to use the library:
 
-```js
+```ts
 let testPeriod1 = new TimeSeriesPath('number', InterpolationMethod.linear),
   testPeriod2 = new TimeSeriesPath('number', InterpolationMethod.linear),
   testPeriod3 = new TimeSeriesPath('number', InterpolationMethod.linear); // Create some time series objects

@@ -8,8 +8,8 @@ import {
   TimestampArrayClass,
   ValueArrayType,
   Vector,
-} from './index.js';
-import { whatsMyType } from './what-is-my-type.js';
+} from '../src/index.js';
+import { whatsMyType } from '../src/what-is-my-type.js';
 
 describe('time-series-path', function () {
   describe('Severity', function () {

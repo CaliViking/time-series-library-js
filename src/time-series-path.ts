@@ -11,7 +11,7 @@
 import { InterpolationMethod } from './interpolation-method.js';
 import { TimeEntry, TimeEntryArray } from './time-entry.js';
 import { Severity } from './severity.js';
-import { StatusArrayClass, TimestampArrayClass, Vector } from './vector.js';
+import { Vector, combine } from './vector.js';
 import { BooleanArrayDataType, ValueArrayType, NumberArrayDataType } from './values.js';
 import { whatsMyType } from './what-is-my-type.js';
 import { ValueType } from './values.js';
@@ -128,9 +128,9 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @returns
    */
   public newVectorFromElements(
-    timestamps: TimestampArrayClass,
+    timestamps: Float64Array,
     values: ThisValueType,
-    statuses?: StatusArrayClass
+    statuses?: Uint32Array
   ): TimeSeriesPath<ThisValueType> {
     this.vector = Vector.fromElements(timestamps, values, statuses);
     return this;
@@ -169,7 +169,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @param targetTimestamps The timestamps for resampling
    * @returns The current TimeSeriesPath
    */
-  public mutableResample(targetTimestamps: TimestampArrayClass): TimeSeriesPath<ThisValueType> {
+  public mutableResample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType> {
     switch (this.interpolationMethod) {
       case InterpolationMethod.none: {
         this.vector = this.vector.resampleNone(targetTimestamps);
@@ -198,7 +198,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @param targetTimestamps The timestamps for resampling
    * @returns A new TimeSeriesPath
    */
-  public resample(targetTimestamps: TimestampArrayClass): TimeSeriesPath<ThisValueType> {
+  public resample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType> {
     const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = this.deepClone();
 
     switch (this.interpolationMethod) {
@@ -409,7 +409,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
     const returnTimeSeriesPath = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
 
     // Create a unique array of all the timestamps
-    const targetTimestamps: TimestampArrayClass = this.vector.timestamps.combine(operand.vector.timestamps);
+    const targetTimestamps: Float64Array = combine(this.vector.timestamps, operand.vector.timestamps);
     // Arithmetic Operators only work on numbers
     const targetVector = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: targetTimestamps.length });
     targetVector.timestamps = targetTimestamps;
@@ -542,7 +542,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
     if (timeSeriesPeriods.length === 0) {
       throw Error('cannot pass 0 length array to aggregate function');
     }
-    let targetTimestamps: TimestampArrayClass = new TimestampArrayClass();
+    let targetTimestamps: Float64Array = new Float64Array();
     const interimTimeSeriesPeriods: TimeSeriesPath<ThisValueType>[] = [];
     const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = new TimeSeriesPath<ThisValueType>(
       InterpolationMethod.linear
@@ -550,7 +550,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
 
     // Get all unique timestamps
     for (const timeSeriesPeriod of timeSeriesPeriods) {
-      targetTimestamps = targetTimestamps.combine(timeSeriesPeriod.vector.timestamps);
+      targetTimestamps = combine(targetTimestamps, timeSeriesPeriod.vector.timestamps);
     }
 
     // Resample all the time Series Periods

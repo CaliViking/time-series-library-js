@@ -4,8 +4,6 @@ import {
   Severity,
   TimeSeriesPath,
   NumberArrayDataType,
-  StatusArrayClass,
-  TimestampArrayClass,
   ValueArrayType,
   Vector,
 } from '../src/index.js';
@@ -112,9 +110,9 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       beforeAll(function () {
         testPeriod.newVectorFromElements(
-          Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+          Float64Array.from(Array(arrayLength).keys()) as Float64Array,
           Float64Array.from(Array(arrayLength).keys()),
-          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+          Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
         );
       });
       test(`should have ${arrayLength} time entries after running setTimeVector`, function () {
@@ -129,7 +127,7 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       beforeAll(function () {
         testPeriod.newVectorFromElements(
-          Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+          Float64Array.from(Array(arrayLength).keys()) as Float64Array,
           Float64Array.from(Array(arrayLength).keys())
         );
       });
@@ -145,9 +143,9 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       const testLocation = 1000;
       testPeriod.newVectorFromElements(
-        Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
-        Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        new Float64Array(arrayLength).map((_v: number, k: number) => k),
+        new Float64Array(arrayLength).map((_v: number, k: number) => k),
+        new Uint32Array(arrayLength).fill(Severity.Good)
       );
       const timeEntries = testPeriod.getTimeEntries();
       test(`should have ${arrayLength} time entries after running getTimeEntries()`, function () {
@@ -178,8 +176,8 @@ describe('time-series-path', function () {
       let testPeriod1: TimeSeriesPath<Float64Array>;
       let testPeriod2: TimeSeriesPath<Float64Array>;
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map((v) => v * 4) as TimestampArrayClass;
-      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4).keys()) as TimestampArrayClass;
+      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map((v) => v * 4) as Float64Array;
+      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4).keys()) as Float64Array;
       beforeAll(function () {
         testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
         // Resample to 4 times the original frequency
@@ -190,7 +188,7 @@ describe('time-series-path', function () {
         testPeriod1.newVectorFromElements(
           originalTimestamps,
           originalValues,
-          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+          Uint32Array.from({ length: arrayLength }, () => Severity.Good)
         );
         testPeriod2 = testPeriod1.resample(resampleTimestamps);
       });
@@ -206,13 +204,9 @@ describe('time-series-path', function () {
     describe('resample() previous', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.previous);
       const arrayLength = 5;
-      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map(
-        (v) => v * 4 + 1
-      ) as TimestampArrayClass;
+      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1) as Float64Array;
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map(
-        (v) => v
-      ) as TimestampArrayClass; // Make sure the timestamps are outside the original array
+      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v) as Float64Array; // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= arrayLength * 4
@@ -224,7 +218,7 @@ describe('time-series-path', function () {
       testPeriod1.newVectorFromElements(
         originalTimestamps,
         originalValues,
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good)
       );
       const testPeriod2 = testPeriod1.resample(resampleTimestamps);
 
@@ -239,13 +233,9 @@ describe('time-series-path', function () {
     describe('resample() next', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.next);
       const arrayLength = 5;
-      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map(
-        (v) => v * 4 + 1
-      ) as TimestampArrayClass;
+      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1) as Float64Array;
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map(
-        (v) => v
-      ) as TimestampArrayClass; // Make sure the timestamps are outside the original array
+      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v) as Float64Array; // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= (arrayLength - 1) * 4 + 1
@@ -257,7 +247,7 @@ describe('time-series-path', function () {
       testPeriod1.newVectorFromElements(
         originalTimestamps,
         originalValues,
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good)
       );
       const testPeriod2 = testPeriod1.resample(resampleTimestamps);
 
@@ -274,13 +264,9 @@ describe('time-series-path', function () {
     describe('resample() none', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.none);
       const arrayLength = 5;
-      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map(
-        (v) => v * 4 + 1
-      ) as TimestampArrayClass;
+      const originalTimestamps = Float64Array.from(Array(arrayLength).keys()).map((v) => v * 4 + 1) as Float64Array;
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map(
-        (v) => v
-      ) as TimestampArrayClass; // Make sure the timestamps are outside the original array
+      const resampleTimestamps = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) => v) as Float64Array; // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= (arrayLength - 1) * 4 + 1 ? ((v - 1) % 4 === 0 ? (v - 1) / 4 : NaN) : NaN
@@ -288,7 +274,7 @@ describe('time-series-path', function () {
       testPeriod1.newVectorFromElements(
         originalTimestamps,
         originalValues,
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good)
       );
       const testPeriod2 = testPeriod1.resample(resampleTimestamps);
 
@@ -310,12 +296,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.add(testPeriod2);
         });
@@ -346,12 +332,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.add(testScalarValue);
         });
@@ -462,12 +448,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.subtract(testPeriod2);
         });
@@ -498,12 +484,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.subtract(testScalarValue);
         });
@@ -538,12 +524,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.multiply(testPeriod2);
         });
@@ -565,12 +551,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.multiply(testScalarValue);
         });
@@ -592,12 +578,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.divide(testPeriod2);
         });
@@ -617,12 +603,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.divide(testScalarValue);
         });
@@ -644,12 +630,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.pow(testPeriod2);
         });
@@ -671,12 +657,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.pow(testScalarValue);
         });
@@ -698,12 +684,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod1.remainder(testPeriod2);
         });
@@ -725,12 +711,12 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+            Float64Array.from(Array(arrayLength).keys()) as Float64Array,
             Float64Array.from(Array(arrayLength).keys()),
-            StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+            Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
           testPeriod2 = testPeriod1.resample(
-            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as TimestampArrayClass
+            Float64Array.from({ length: arrayLength * 2 }, (_v, k) => k / 2) as Float64Array
           );
           testPeriod3 = testPeriod2.remainder(testScalarValue);
         });
@@ -750,9 +736,9 @@ describe('time-series-path', function () {
 
       beforeAll(function () {
         testPeriod1.newVectorFromElements(
-          Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+          Float64Array.from(Array(arrayLength).keys()) as Float64Array,
           Float64Array.from(Array(arrayLength).keys()),
-          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+          Uint32Array.from({ length: arrayLength }, () => Severity.Good)
         );
         testPeriod2 = testPeriod1.negate();
       });
@@ -771,9 +757,9 @@ describe('time-series-path', function () {
 
       beforeAll(function () {
         testPeriod1.newVectorFromElements(
-          Float64Array.from(Array(arrayLength).keys()) as TimestampArrayClass,
+          Float64Array.from(Array(arrayLength).keys()) as Float64Array,
           Float64Array.from(Array(arrayLength).keys()),
-          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+          Uint32Array.from({ length: arrayLength }, () => Severity.Good)
         );
         testPeriod2 = testPeriod1.subtract(2);
         testPeriod3 = testPeriod1.add(2);

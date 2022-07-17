@@ -21,47 +21,25 @@ import { whatsMyType } from './what-is-my-type.js';
  */
 
 /**
- * A class that allows manipulation of timestamps
+ * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
+ * @returns a new array of sorted unique timestamps
  */
-export class TimestampArrayClass extends Float64Array {
-  /**
-   * Similar to Float64Array.slice(). The method name is not slice as it caused a circular reference
-   * @param start The start index position (inclusive)
-   * @param end The end index position (exclusive)
-   * @returns a new array of timestamps
-   */
-  indexSlice(start: number, end?: number): TimestampArrayClass {
-    return Object.assign(
-      new TimestampArrayClass((end ?? this.length) - start),
-      (this as Float64Array).slice(start, end)
-    );
-  }
-
-  /**
-   * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
-   * @returns a new array of sorted unique timestamps
-   */
-  public sortAndRemoveDuplicates(): TimestampArrayClass {
-    const tempTimestamps = Float64Array.from([...new Set(this.sort((a, b) => a.valueOf() - b.valueOf()))]);
-    const returnTimestamps = new TimestampArrayClass(tempTimestamps.length);
-    returnTimestamps.set(tempTimestamps);
-    return returnTimestamps;
-  }
-
-  /**
-   * Will combine two time series timestamp arrays
-   * @param combineTimestamps The array of new timestamps to combine with
-   * @returns A new TimestampsClass array object
-   */
-  public combine(combineTimestamps: TimestampArrayClass): TimestampArrayClass {
-    const combinedTimestamps = new TimestampArrayClass(this.length + combineTimestamps.length);
-    combinedTimestamps.set(this);
-    combinedTimestamps.set(combineTimestamps, this.length);
-    return combinedTimestamps.sortAndRemoveDuplicates();
-  }
+export function sortAndRemoveDuplicates(timestamps: Float64Array): Float64Array {
+  return Float64Array.from([...new Set(timestamps.sort((a, b) => a.valueOf() - b.valueOf()))]);
 }
 
-export class StatusArrayClass extends Uint32Array {}
+/**
+ * Will combine two time series timestamp arrays
+ * @param timestamps1 The first timestamp array
+ * @param timestamps2 The second timestamp array
+ * @returns The resulting timestamp array
+ */
+export function combine(timestamps1: Float64Array, timestamps2: Float64Array): Float64Array {
+  const combinedTimestamps = new Float64Array(timestamps1.length + timestamps2.length);
+  combinedTimestamps.set(timestamps1);
+  combinedTimestamps.set(timestamps2, timestamps1.length);
+  return sortAndRemoveDuplicates(combinedTimestamps);
+}
 
 /**
  * A Vector is a combination of timestamps, values and status codes in one object.
@@ -74,9 +52,9 @@ export class StatusArrayClass extends Uint32Array {}
  * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
  */
 export class Vector<ThisValueArrayType extends ValueArrayType> {
-  timestamps: TimestampArrayClass;
+  timestamps: Float64Array;
   values: ThisValueArrayType;
-  statuses: StatusArrayClass;
+  statuses: Uint32Array;
 
   /**
    * Creates a new Vector.
@@ -85,7 +63,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    */
   constructor(config?: { dataType: ThisValueArrayType; length: number }) {
     if (config) {
-      this.timestamps = new TimestampArrayClass(config.length);
+      this.timestamps = new Float64Array(config.length);
       switch (whatsMyType(config.dataType)) {
         case 'Uint8Array':
           (this.values as Uint8Array) = new Uint8Array(config.length);
@@ -99,7 +77,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
         default:
           throw Error(`Invalid dataType ${whatsMyType(config.dataType)}`);
       }
-      this.statuses = new StatusArrayClass(config.length);
+      this.statuses = new Uint32Array(config.length);
     }
   }
 
@@ -154,7 +132,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns
    */
   public createElements(length: number): Vector<ThisValueArrayType> {
-    this.timestamps = new TimestampArrayClass(length);
+    this.timestamps = new Float64Array(length);
     switch (whatsMyType(this.values)) {
       case 'Uint8Array':
         (this.values as Uint8Array) = new Uint8Array(length);
@@ -168,7 +146,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
       default:
         throw Error(`Invalid dataType ${whatsMyType(this.values)}`);
     }
-    this.statuses = new StatusArrayClass(length);
+    this.statuses = new Uint32Array(length);
     return this;
   }
 
@@ -204,9 +182,9 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns A new Vector
    */
   public static fromElements<ValueType extends ValueArrayType>(
-    timestamps: TimestampArrayClass,
+    timestamps: Float64Array,
     values: ValueType,
-    statuses?: StatusArrayClass
+    statuses?: Uint32Array
   ): Vector<ValueType> {
     // let dataType: ValueType;
     const returnVector = new Vector({ dataType: values, length: timestamps.length });
@@ -373,7 +351,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    */
   public slice(fromIndex: number, toIndex?: number): Vector<ThisValueArrayType> {
     return Vector.fromElements(
-      this.timestamps.indexSlice(fromIndex, toIndex),
+      this.timestamps.slice(fromIndex, toIndex),
       (this.values as ThisValueArrayType).slice(fromIndex, toIndex) as ThisValueArrayType,
       this.statuses.slice(fromIndex, toIndex)
     );
@@ -423,7 +401,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
     // Only use the portion of the original vector up to where the cut off is
     if (adjustedCutOffIndex > 0) {
       // This if statement is only there for performance reasons, it avoids copying the whole memory
-      returnVector.timestamps.set(this.timestamps.indexSlice(0, adjustedCutOffIndex));
+      returnVector.timestamps.set(this.timestamps.slice(0, adjustedCutOffIndex));
     }
     returnVector.timestamps.set(concatVector.timestamps, adjustedCutOffIndex);
 
@@ -501,7 +479,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNone(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType> {
+  public resampleNone(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -556,7 +534,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resamplePrevious(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType> {
+  public resamplePrevious(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -606,7 +584,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNext(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType> {
+  public resampleNext(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -663,7 +641,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
     objectIndex: number,
     targetIndex: number,
     targetValues: ThisValueArrayType,
-    targetStatuses: StatusArrayClass
+    targetStatuses: Uint32Array
   ) {
     if (found) {
       targetValues[targetIndex] = this.values[objectIndex];
@@ -680,7 +658,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleLinear(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType> {
+  public resampleLinear(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();

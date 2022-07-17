@@ -9,7 +9,7 @@
  * */
 import { InterpolationMethod } from './interpolation-method.js';
 import { Severity } from './severity.js';
-import { TimestampArrayClass, Vector } from './vector.js';
+import { Vector, combine } from './vector.js';
 import { BooleanArrayDataType, NumberArrayDataType } from './values.js';
 import { whatsMyType } from './what-is-my-type.js';
 /**
@@ -355,7 +355,7 @@ export class TimeSeriesPath {
     arithmeticOperatorTS(operator, operand) {
         const returnTimeSeriesPath = new TimeSeriesPath(this.interpolationMethod);
         // Create a unique array of all the timestamps
-        const targetTimestamps = this.vector.timestamps.combine(operand.vector.timestamps);
+        const targetTimestamps = combine(this.vector.timestamps, operand.vector.timestamps);
         // Arithmetic Operators only work on numbers
         const targetVector = new Vector({ dataType: NumberArrayDataType, length: targetTimestamps.length });
         targetVector.timestamps = targetTimestamps;
@@ -469,12 +469,12 @@ export class TimeSeriesPath {
         if (timeSeriesPeriods.length === 0) {
             throw Error('cannot pass 0 length array to aggregate function');
         }
-        let targetTimestamps = new TimestampArrayClass();
+        let targetTimestamps = new Float64Array();
         const interimTimeSeriesPeriods = [];
         const returnTimeSeriesPeriod = new TimeSeriesPath(InterpolationMethod.linear);
         // Get all unique timestamps
         for (const timeSeriesPeriod of timeSeriesPeriods) {
-            targetTimestamps = targetTimestamps.combine(timeSeriesPeriod.vector.timestamps);
+            targetTimestamps = combine(targetTimestamps, timeSeriesPeriod.vector.timestamps);
         }
         // Resample all the time Series Periods
         for (const timeSeriesPeriod of timeSeriesPeriods) {

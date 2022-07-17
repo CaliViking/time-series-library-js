@@ -3,30 +3,17 @@ import { SliceMode } from './slice-mode.js';
 import { TimeEntry, TimeEntryArray } from './time-entry.js';
 import { ValueType } from './values.js';
 /**
- * A class that allows manipulation of timestamps
+ * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
+ * @returns a new array of sorted unique timestamps
  */
-export declare class TimestampArrayClass extends Float64Array {
-    /**
-     * Similar to Float64Array.slice(). The method name is not slice as it caused a circular reference
-     * @param start The start index position (inclusive)
-     * @param end The end index position (exclusive)
-     * @returns a new array of timestamps
-     */
-    indexSlice(start: number, end?: number): TimestampArrayClass;
-    /**
-     * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
-     * @returns a new array of sorted unique timestamps
-     */
-    sortAndRemoveDuplicates(): TimestampArrayClass;
-    /**
-     * Will combine two time series timestamp arrays
-     * @param combineTimestamps The array of new timestamps to combine with
-     * @returns A new TimestampsClass array object
-     */
-    combine(combineTimestamps: TimestampArrayClass): TimestampArrayClass;
-}
-export declare class StatusArrayClass extends Uint32Array {
-}
+export declare function sortAndRemoveDuplicates(timestamps: Float64Array): Float64Array;
+/**
+ * Will combine two time series timestamp arrays
+ * @param timestamps1 The first timestamp array
+ * @param timestamps2 The second timestamp array
+ * @returns The resulting timestamp array
+ */
+export declare function combine(timestamps1: Float64Array, timestamps2: Float64Array): Float64Array;
 /**
  * A Vector is a combination of timestamps, values and status codes in one object.
  * Vectors pivots the traditional thinking of a row per point with timestamps, value, status.
@@ -38,9 +25,9 @@ export declare class StatusArrayClass extends Uint32Array {
  * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
  */
 export declare class Vector<ThisValueArrayType extends ValueArrayType> {
-    timestamps: TimestampArrayClass;
+    timestamps: Float64Array;
     values: ThisValueArrayType;
-    statuses: StatusArrayClass;
+    statuses: Uint32Array;
     /**
      * Creates a new Vector.
      * @param config An object that contains: 1. a variable with the data type you want the values array to represent (Float64Array, Uint8Array, string[], object[]).
@@ -82,7 +69,7 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param statuses
      * @returns A new Vector
      */
-    static fromElements<ValueType extends ValueArrayType>(timestamps: TimestampArrayClass, values: ValueType, statuses?: StatusArrayClass): Vector<ValueType>;
+    static fromElements<ValueType extends ValueArrayType>(timestamps: Float64Array, values: ValueType, statuses?: Uint32Array): Vector<ValueType>;
     /**
      * Creates a new vector from an array of time entries [{t,v,s}...{t,v,s}]
      * @param timeEntries in the format [{t,v,s}...{t,v,s}]
@@ -151,19 +138,19 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleNone(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType>;
+    resampleNone(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
     /**
      * Will resample the Vector using the Previous interpolation method.
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resamplePrevious(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType>;
+    resamplePrevious(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
     /**
      * Will resample the Vector using the Next interpolation method.
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleNext(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType>;
+    resampleNext(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
     /**
      * Sets the resampled value depending on whether it has been found
      * @param found A flag indicating that it has been found
@@ -178,5 +165,5 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleLinear(targetTimestamps: TimestampArrayClass): Vector<ThisValueArrayType>;
+    resampleLinear(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
 }

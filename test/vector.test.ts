@@ -4,9 +4,7 @@ import {
   reverseFindIndex,
   IndexMode,
   Vector,
-  TimestampArrayClass,
   ValueArrayType,
-  StatusArrayClass,
   NumberArrayDataType,
   Severity,
   SliceMode,
@@ -19,9 +17,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
-        Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new Float64Array(arrayLength).map((_v: number, k: number) => k),
+        new Uint32Array(arrayLength).fill(Severity.Good)
       );
     });
 
@@ -62,9 +60,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
-        Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new Float64Array(arrayLength).map((_v: number, k: number) => k),
+        new Uint32Array(arrayLength).fill(Severity.Good)
       );
     });
 
@@ -115,23 +113,21 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
-        Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new Float64Array(arrayLength).map((_v: number, k: number) => k),
+        new Uint32Array(arrayLength).fill(Severity.Good)
       );
       // Create testPeriod2 so that it does not overlap testPeriod1
       testVector2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as Float64Array,
         Float64Array.from({ length: arrayLength }, () => 2),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create testPeriod3 so that it does overlap testPeriod1
       testVector3 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map(
-          (_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10
-        ) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10) as Float64Array,
         Float64Array.from({ length: arrayLength }, () => 4),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
 
       resultVector0 = testEmptyPeriod1.concat(testVector1);
@@ -197,9 +193,9 @@ describe('Vector', function () {
     beforeAll(function () {
       for (let i = 0; i < 5; i++) {
         const tempPeriod = Vector.fromElements(
-          Float64Array.from(Array(arrayLength)).map((_v, k) => (i * arrayLength + k) * 10) as TimestampArrayClass,
-          Float64Array.from(Array(arrayLength).keys()),
-          StatusArrayClass.from({ length: arrayLength }, () => Severity.Good)
+          new Float64Array(arrayLength).map((_v: number, k: number) => (i * arrayLength + k) * 10),
+          new Float64Array(arrayLength).map((_v: number, k: number) => k),
+          new Uint32Array(arrayLength).fill(Severity.Good)
         );
         testPeriods.push(tempPeriod);
       }
@@ -231,31 +227,29 @@ describe('Vector', function () {
 
     beforeAll(function () {
       basePeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
         Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create afterPeriod2 so that it does not overlap testPeriod1
       afterPeriod2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as Float64Array,
         Float64Array.from({ length: arrayLength }, () => 2),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
       lateOverlappingPeriod3 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map(
-          (_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10
-        ) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10) as Float64Array,
         Float64Array.from({ length: arrayLength }, () => 4),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create insidePeriod4 so that it is inside testPeriod1
       insidePeriod4 = Vector.fromElements(
         Float64Array.from(Array(Math.floor(arrayLength / 2))).map(
           (_v, k) => Math.floor(arrayLength / 4) * 10 + k * 10
-        ) as TimestampArrayClass,
+        ) as Float64Array,
         Float64Array.from({ length: Math.floor(arrayLength / 2) }, () => 6),
-        Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as Uint32Array
       );
     });
 
@@ -368,9 +362,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
         Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       resultPeriods500 = testPeriod1.portion(500);
       resultPeriods1000 = testPeriod1.portion(1000);
@@ -414,9 +408,9 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as TimestampArrayClass,
+        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
         Float64Array.from(Array(arrayLength).keys()),
-        StatusArrayClass.from({ length: arrayLength }, () => Severity.Good) as StatusArrayClass
+        Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
 
       resultIncludeOverflowOnTarget = testPeriod1.sliceTime(1000, 99000, SliceMode.IncludeOverflow);

@@ -367,16 +367,17 @@ export class Vector {
      * @returns A single time series path with all the paths concatenated together
      */
     static multiConcat(concatVectors) {
+        if (concatVectors === undefined) {
+            throw Error(`concatVectors must be defined`);
+        }
         if (concatVectors.length === 0) {
-            return;
+            return new Vector;
         }
-        else {
-            let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
-            for (const concatVector of concatVectors) {
-                returnVector = returnVector.concat(concatVector);
-            }
-            return returnVector;
+        let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
+        for (const concatVector of concatVectors) {
+            returnVector = returnVector.concat(concatVector);
         }
+        return returnVector;
     }
     /**
      * Replaces the section of the existing vector with the time period for the new vector

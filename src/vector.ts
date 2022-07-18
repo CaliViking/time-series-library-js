@@ -438,15 +438,17 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns A single time series path with all the paths concatenated together
    */
   public static multiConcat<ValueType extends ValueArrayType>(concatVectors: Vector<ValueType>[]): Vector<ValueType> {
-    if (concatVectors.length === 0) {
-      return;
-    } else {
-      let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
-      for (const concatVector of concatVectors) {
-        returnVector = returnVector.concat(concatVector);
-      }
-      return returnVector;
+    if (concatVectors === undefined) {
+      throw Error(`concatVectors must be defined`);
     }
+    if (concatVectors.length === 0) {
+      return new Vector<ValueType>;
+    }
+    let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
+    for (const concatVector of concatVectors) {
+      returnVector = returnVector.concat(concatVector);
+    }
+    return returnVector;
   }
 
   /**

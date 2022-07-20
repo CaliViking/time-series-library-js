@@ -196,21 +196,21 @@ export class Vector {
             throw Error('Unable to tell data type from an array with length 0');
         }
         let returnVector;
-        switch (whatsMyType(timeEntries[0].v)) {
-            case 'Number':
+        switch (typeof timeEntries[0].v) {
+            case 'number':
                 returnVector = new Vector({ dataType: NumberArrayDataType, length: timeEntries.length });
                 break;
-            case 'String':
+            case 'string':
                 returnVector = new Vector({ dataType: StringArrayDataType, length: timeEntries.length });
                 break;
-            case 'Boolean':
+            case 'boolean':
                 returnVector = new Vector({ dataType: BooleanArrayDataType, length: timeEntries.length });
                 break;
-            case 'Object':
+            case 'object':
                 returnVector = new Vector({ dataType: ObjectArrayDataType, length: timeEntries.length });
                 break;
             default:
-                throw Error(`Invalid dataType ${whatsMyType(timeEntries[0].v)}`);
+                throw Error(`Invalid dataType ${typeof timeEntries[0].v}, timeEntries: ${timeEntries.slice(0, 2)}`);
         }
         for (let i = 0; i < timeEntries.length; i++) {
             returnVector.timestamps[i] = timeEntries[i].t;
@@ -229,21 +229,21 @@ export class Vector {
             throw Error('Unable to tell data type from an array with length 0');
         }
         let returnVector;
-        switch (whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])) {
-            case 'Number':
+        switch (typeof timeEntryArrays[0][ArrayPositions.VALUE]) {
+            case 'number':
                 returnVector = new Vector({ dataType: NumberArrayDataType, length: timeEntryArrays.length });
                 break;
-            case 'String':
+            case 'string':
                 returnVector = new Vector({ dataType: StringArrayDataType, length: timeEntryArrays.length });
                 break;
-            case 'Boolean':
+            case 'boolean':
                 returnVector = new Vector({ dataType: BooleanArrayDataType, length: timeEntryArrays.length });
                 break;
-            case 'Object':
+            case 'object':
                 returnVector = new Vector({ dataType: ObjectArrayDataType, length: timeEntryArrays.length });
                 break;
             default:
-                throw Error(`Invalid dataType ${whatsMyType(timeEntryArrays[0][ArrayPositions.VALUE])}`);
+                throw Error(`Invalid dataType ${typeof timeEntryArrays[0][ArrayPositions.VALUE]} for timeEntryArrays ${timeEntryArrays.slice(0, 2)}`);
         }
         for (let i = 0; i < timeEntryArrays.length; i++) {
             returnVector.timestamps[i] = timeEntryArrays[i][ArrayPositions.TIMESTAMP];

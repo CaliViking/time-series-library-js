@@ -131,7 +131,7 @@ describe('time-series-path', function () {
           Float64Array.from(Array(arrayLength).keys())
         );
       });
-      test(`should have ${arrayLength} time entries after running setTimeVector() with no statuses`, function () {
+      test(`should have 100000 time entries after running setTimeVector() with no statuses`, function () {
         expect(testPeriod.vector.timestamps.length).toBe(arrayLength);
       });
       test('should pass validate after running setTimeVector() with no statuses', function () {
@@ -154,13 +154,13 @@ describe('time-series-path', function () {
       test(`should have timestamp 0 in timeEntry 0`, function () {
         expect(timeEntries[0].t).toBe(0);
       });
-      test(`should have timestamp ${testLocation} in timeEntry ${testLocation}`, function () {
+      test(`should have timestamp 1000 in timeEntry 1000`, function () {
         expect(timeEntries[testLocation].t).toBe(testLocation);
       });
       test(`should have value 0 in timeEntry 0`, function () {
         expect(timeEntries[0].t).toBe(0);
       });
-      test(`should have value ${testLocation} in timeEntry ${testLocation}`, function () {
+      test(`should have value 1000 in timeEntry 1000`, function () {
         expect(timeEntries[testLocation].v).toBe(testLocation);
       });
       test(`should have status 0 in timeEntry 0`, function () {
@@ -306,18 +306,16 @@ describe('time-series-path', function () {
           testPeriod3 = testPeriod1.add(testPeriod2);
         });
 
-        test(`should have timestamp ${testLocation / 2} in location ${testLocation} when TSP add`, function () {
+        test(`should have timestamp 500 in location 1000 when TSP add`, function () {
           expect(testPeriod3.vector.timestamps[testLocation]).toBe(testLocation / 2);
         });
-        test(`should have value ${testLocation} in location ${testLocation} when TSP add`, function () {
+        test(`should have value 1000 in location 1000 when TSP add`, function () {
           expect(testPeriod3.vector.values[testLocation]).toBe(testLocation);
         });
-        test(`should have timestamp ${(testLocation + 1) / 2} in location ${
-          testLocation + 1
-        } when TSP add`, function () {
+        test(`should have timestamp 500.5 in location 1001 when TSP add`, function () {
           expect(testPeriod3.vector.timestamps[testLocation + 1]).toBe((testLocation + 1) / 2);
         });
-        test(`should have value ${testLocation + 1} in location ${testLocation + 1} when TSP add`, function () {
+        test(`should have value 1001 in location 1001 when TSP add`, function () {
           expect(testPeriod3.vector.values[testLocation + 1]).toBe(testLocation + 1);
         });
       });
@@ -342,22 +340,16 @@ describe('time-series-path', function () {
           testPeriod3 = testPeriod2.add(testScalarValue);
         });
 
-        test(`should have timestamp ${testLocation / 2} in location ${testLocation} when scalar add`, function () {
+        test(`should have timestamp 500 in location 1000 when scalar add`, function () {
           expect(testPeriod3.vector.timestamps[testLocation]).toBe(testLocation / 2);
         });
-        test(`should have value ${
-          testLocation / 2 + testScalarValue
-        } in location ${testLocation} when scalar add`, function () {
+        test(`should have value 505 in location 1000 when scalar add`, function () {
           expect(testPeriod3.vector.values[testLocation]).toBe(testLocation / 2 + testScalarValue);
         });
-        test(`should have timestamp ${(testLocation + 1) / 2} in location ${
-          testLocation + 1
-        } when scalar add`, function () {
+        test(`should have timestamp 500.5 in location 1001 when scalar add`, function () {
           expect(testPeriod3.vector.timestamps[testLocation + 1]).toBe((testLocation + 1) / 2);
         });
-        test(`should have value ${(testLocation + 1) / 2 + testScalarValue} in location ${
-          testLocation + 1
-        } when scalar add`, function () {
+        test(`should have value 505.5 in location 1001 when scalar add`, function () {
           expect(testPeriod3.vector.values[testLocation + 1]).toBe((testLocation + 1) / 2 + testScalarValue);
         });
       });
@@ -458,18 +450,16 @@ describe('time-series-path', function () {
           testPeriod3 = testPeriod1.subtract(testPeriod2);
         });
 
-        test(`should have timestamp ${testLocation / 2} in location ${testLocation} when TSP subtract`, function () {
+        test(`should have timestamp 500 in location 1000 when TSP subtract`, function () {
           expect(testPeriod3.vector.timestamps[testLocation]).toBe(testLocation / 2);
         });
-        test(`should have value ${0} in location ${testLocation} when TSP subtract`, function () {
+        test(`should have value 0 in location 1000 when TSP subtract`, function () {
           expect(testPeriod3.vector.values[testLocation]).toBe(0);
         });
-        test(`should have timestamp ${(testLocation + 1) / 2} in location ${
-          testLocation + 1
-        } when TSP subtract`, function () {
+        test(`should have timestamp 500.5 in location 1001 when TSP subtract`, function () {
           expect(testPeriod3.vector.timestamps[testLocation + 1]).toBe((testLocation + 1) / 2);
         });
-        test(`should have value ${0} in location ${testLocation + 1} when TSP subtract`, function () {
+        test(`should have value 0 in location 1001 when TSP subtract`, function () {
           expect(testPeriod3.vector.values[testLocation + 1]).toBe(0);
         });
       });
@@ -494,22 +484,16 @@ describe('time-series-path', function () {
           testPeriod3 = testPeriod2.subtract(testScalarValue);
         });
 
-        test(`should have timestamp ${testLocation / 2} in location ${testLocation} when scalar subtract`, function () {
+        test(`should have timestamp 500 in location 1000 when scalar subtract`, function () {
           expect(testPeriod3.vector.timestamps[testLocation]).toBe(testLocation / 2);
         });
-        test(`should have value ${
-          testLocation / 2 - testScalarValue
-        } in location ${testLocation} when scalar subtract`, function () {
+        test(`should have value 495 in location 1000 when scalar subtract`, function () {
           expect(testPeriod3.vector.values[testLocation]).toBe(testLocation / 2 - testScalarValue);
         });
-        test(`should have timestamp ${(testLocation + 1) / 2} in location ${
-          testLocation + 1
-        } when scalar subtract`, function () {
+        test(`should have timestamp 500.5 in location 1001 when scalar subtract`, function () {
           expect(testPeriod3.vector.timestamps[testLocation + 1]).toBe((testLocation + 1) / 2);
         });
-        test(`should have value ${(testLocation + 1) / 2 - testScalarValue} in location ${
-          testLocation + 1
-        } when scalar add`, function () {
+        test(`should have value 595.5 in location 1001 when scalar add`, function () {
           expect(testPeriod3.vector.values[testLocation + 1]).toBe((testLocation + 1) / 2 - testScalarValue);
         });
       });
@@ -766,19 +750,19 @@ describe('time-series-path', function () {
         testPeriods = [testPeriod1, testPeriod2, testPeriod3];
       });
 
-      test(`should have sum value ${testLocation * 3} in location ${testLocation}`, function () {
+      test(`should have sum value 300 in location 100`, function () {
         expect(TimeSeriesPath.sum(testPeriods).vector.values[testLocation]).toBe(testLocation * 3);
       });
-      test(`should have avg value ${testLocation} in location ${testLocation}`, function () {
+      test(`should have avg value 100 in location 100`, function () {
         expect(TimeSeriesPath.avg(testPeriods).vector.values[testLocation]).toBe(testLocation);
       });
-      test(`should have min value ${testLocation - 2} in location ${testLocation}`, function () {
+      test(`should have min value 98 in location 100`, function () {
         expect(TimeSeriesPath.min(testPeriods).vector.values[testLocation]).toBe(testLocation - 2);
       });
-      test(`should have max value ${testLocation + 2} in location ${testLocation}`, function () {
+      test(`should have max value 102 in location 100`, function () {
         expect(TimeSeriesPath.max(testPeriods).vector.values[testLocation]).toBe(testLocation + 2);
       });
-      test(`should have range value ${4} in location ${testLocation}`, function () {
+      test(`should have range value 4 in location $100`, function () {
         expect(TimeSeriesPath.range(testPeriods).vector.values[testLocation]).toBe(4);
       });
     });

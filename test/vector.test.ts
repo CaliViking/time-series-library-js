@@ -17,41 +17,41 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
     });
 
     test(`Timestamp 0 Exclusive should find index null`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 0)).toBeNull;
+      expect(forwardFindIndex(testVector1.timestamps, 0n)).toBeNull;
     });
     test(`Timestamp 15 should find index 1`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 15)).toBe(1);
+      expect(forwardFindIndex(testVector1.timestamps, 15n)).toBe(1);
     });
     test(`Timestamp 20 Exclusive should find index 1`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 20)).toBe(1);
+      expect(forwardFindIndex(testVector1.timestamps, 20n)).toBe(1);
     });
     test(`Timestamp 20 Inclusive should find index 2`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 20, IndexMode.Inclusive)).toBe(2);
+      expect(forwardFindIndex(testVector1.timestamps, 20n, IndexMode.Inclusive)).toBe(2);
     });
     test(`Timestamp 49990 Inclusive should find index 4999`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 49990, IndexMode.Inclusive)).toBe(4999);
+      expect(forwardFindIndex(testVector1.timestamps, 49990n, IndexMode.Inclusive)).toBe(4999);
     });
     test(`Timestamp 99980 Exclusive should find index 9997`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 99980, IndexMode.Exclusive)).toBe(9997);
+      expect(forwardFindIndex(testVector1.timestamps, 99980n, IndexMode.Exclusive)).toBe(9997);
     });
     test(`Timestamp 99990 Exclusive should find index 9998`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 99990, IndexMode.Exclusive)).toBe(9998);
+      expect(forwardFindIndex(testVector1.timestamps, 99990n, IndexMode.Exclusive)).toBe(9998);
     });
     test(`Timestamp 99990 Inclusive should find index 9999`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 99990, IndexMode.Inclusive)).toBe(9999);
+      expect(forwardFindIndex(testVector1.timestamps, 99990n, IndexMode.Inclusive)).toBe(9999);
     });
     test(`Timestamp 100000 Exclusive should find index 9999`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 100000, IndexMode.Exclusive)).toBe(9999);
+      expect(forwardFindIndex(testVector1.timestamps, 100000n, IndexMode.Exclusive)).toBe(9999);
     });
     test(`Timestamp 100000 Inclusive should find index 9999`, function () {
-      expect(forwardFindIndex(testVector1.timestamps, 100000, IndexMode.Inclusive)).toBe(9999);
+      expect(forwardFindIndex(testVector1.timestamps, 100000n, IndexMode.Inclusive)).toBe(9999);
     });
   });
   describe('reverseFindIndex', function () {
@@ -60,44 +60,44 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
     });
 
     test(`Timestamp 0 Inclusive should find index 0`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 0, IndexMode.Inclusive)).toBe(0);
+      expect(reverseFindIndex(testPeriod1.timestamps, 0n, IndexMode.Inclusive)).toBe(0);
     });
     test(`Timestamp 0 Exclusive should find index 1`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 0, IndexMode.Exclusive)).toBe(1);
+      expect(reverseFindIndex(testPeriod1.timestamps, 0n, IndexMode.Exclusive)).toBe(1);
     });
     test(`Timestamp 15 Exclusive should find index 2`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 15, IndexMode.Exclusive)).toBe(2);
+      expect(reverseFindIndex(testPeriod1.timestamps, 15n, IndexMode.Exclusive)).toBe(2);
     });
     test(`Timestamp 20 Exclusive should find index 2`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 20, IndexMode.Exclusive)).toBe(3);
+      expect(reverseFindIndex(testPeriod1.timestamps, 20n, IndexMode.Exclusive)).toBe(3);
     });
     test(`Timestamp 20 Inclusive should find index 2`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 20, IndexMode.Inclusive)).toBe(2);
+      expect(reverseFindIndex(testPeriod1.timestamps, 20n, IndexMode.Inclusive)).toBe(2);
     });
     test(`Timestamp 49990 Inclusive should find index 4999`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 49990, IndexMode.Inclusive)).toBe(4999);
+      expect(reverseFindIndex(testPeriod1.timestamps, 49990n, IndexMode.Inclusive)).toBe(4999);
     });
     test(`Timestamp 99980 Exclusive should find index 9999`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 99980, IndexMode.Exclusive)).toBe(9999);
+      expect(reverseFindIndex(testPeriod1.timestamps, 99980n, IndexMode.Exclusive)).toBe(9999);
     });
     test(`Timestamp 99990 Exclusive should find index null`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 99990, IndexMode.Exclusive)).toBeNull;
+      expect(reverseFindIndex(testPeriod1.timestamps, 99990n, IndexMode.Exclusive)).toBeNull;
     });
     test(`Timestamp 99990 Inclusive should find index 9999`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 99990, IndexMode.Inclusive)).toBe(9999);
+      expect(reverseFindIndex(testPeriod1.timestamps, 99990n, IndexMode.Inclusive)).toBe(9999);
     });
     test(`Timestamp 100000 Exclusive should find index null`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 100000, IndexMode.Exclusive)).toBeNull;
+      expect(reverseFindIndex(testPeriod1.timestamps, 100000n, IndexMode.Exclusive)).toBeNull;
     });
     test(`Timestamp 100000 Inclusive should find index null`, function () {
-      expect(reverseFindIndex(testPeriod1.timestamps, 100000, IndexMode.Inclusive)).toBeNull;
+      expect(reverseFindIndex(testPeriod1.timestamps, 100000n, IndexMode.Inclusive)).toBeNull;
     });
   });
   describe('concat', function () {
@@ -113,19 +113,19 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        new Float64Array(arrayLength).map((_v: number, k: number) => k * 10),
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
       // Create testPeriod2 so that it does not overlap testPeriod1
       testVector2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 2),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create testPeriod3 so that it does overlap testPeriod1
       testVector3 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 4),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
@@ -140,7 +140,7 @@ describe('Vector', function () {
       expect(resultVector0.timestamps.length).toBe(10000);
     });
     test(`Concatenating testPeriod1 to testEmptyPeriod1 should return a timestamp = 99990 in position 9999`, function () {
-      expect(resultVector0.timestamps[9999]).toBe(99990);
+      expect(resultVector0.timestamps[9999]).toBe(99990n);
     });
     test(`Concatenating testPeriod1 to testEmptyPeriod1 should return a value = 9999 in position 9999`, function () {
       expect(resultVector0.values[9999]).toBe(9999);
@@ -150,7 +150,7 @@ describe('Vector', function () {
       expect(resultVector1.timestamps.length).toBe(20000);
     });
     test(`Concatenating testPeriod2 to testPeriod1 should return a timestamp = 100000 in position 10000`, function () {
-      expect(resultVector1.timestamps[10000]).toBe(100000);
+      expect(resultVector1.timestamps[10000]).toBe(100000n);
     });
     test(`Concatenating testPeriod2 to testPeriod1 should return a value = 9999 in position 9999`, function () {
       expect(resultVector1.values[9999]).toBe(9999);
@@ -163,7 +163,7 @@ describe('Vector', function () {
       expect(resultVector2.timestamps.length).toBe(15000);
     });
     test(`Concatenating testPeriod3 to testPeriod1 should return a timestamp = 100000 in position 10000`, function () {
-      expect(resultVector2.timestamps[10000]).toBe(100000);
+      expect(resultVector2.timestamps[10000]).toBe(100000n);
     });
     test(`Concatenating testPeriod3 to testPeriod1 should return a value = 4999 in position 4999`, function () {
       expect(resultVector2.values[4999]).toBe(4999);
@@ -176,7 +176,7 @@ describe('Vector', function () {
       expect(resultVector3.timestamps.length).toBe(10000);
     });
     test(`Concatenating testPeriod1 to testPeriod3 should return a timestamp = 99990 in position 9999`, function () {
-      expect(resultVector3.timestamps[9999]).toBe(99990);
+      expect(resultVector3.timestamps[9999]).toBe(99990n);
     });
     test(`Concatenating testPeriod1 to testPeriod3 should return a value = 4999 in position 4999`, function () {
       expect(resultVector3.values[4999]).toBe(4999);
@@ -193,7 +193,7 @@ describe('Vector', function () {
     beforeAll(function () {
       for (let i = 0; i < 5; i++) {
         const tempPeriod = Vector.fromElements(
-          new Float64Array(arrayLength).map((_v: number, k: number) => (i * arrayLength + k) * 10),
+          new BigInt64Array(arrayLength).map((_v, k) => BigInt((i * arrayLength + k) * 10)),
           new Float64Array(arrayLength).map((_v: number, k: number) => k),
           new Uint32Array(arrayLength).fill(Severity.Good)
         );
@@ -227,27 +227,27 @@ describe('Vector', function () {
 
     beforeAll(function () {
       basePeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create afterPeriod2 so that it does not overlap testPeriod1
       afterPeriod2 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => arrayLength * 10 + k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 2),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
       lateOverlappingPeriod3 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => Math.floor(arrayLength / 2) * 10 + k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 4),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create insidePeriod4 so that it is inside testPeriod1
       insidePeriod4 = Vector.fromElements(
-        Float64Array.from(Array(Math.floor(arrayLength / 2))).map(
-          (_v, k) => Math.floor(arrayLength / 4) * 10 + k * 10
-        ) as Float64Array,
+        new BigInt64Array(Math.floor(arrayLength / 2)).map((_v, k) =>
+          BigInt(Math.floor(arrayLength / 4) * 10 + k * 10)
+        ),
         Float64Array.from({ length: Math.floor(arrayLength / 2) }, () => 6),
         Uint32Array.from({ length: Math.floor(arrayLength / 2) }, () => Severity.Good) as Uint32Array
       );
@@ -262,7 +262,7 @@ describe('Vector', function () {
         expect(resultEmptyPeriod0.timestamps.length).toBe(10000);
       });
       test(`Replacing basePeriod1 in testEmptyPeriod1 should return a timestamp = 99990 in position 9999`, function () {
-        expect(resultEmptyPeriod0.timestamps[9999]).toBe(99990);
+        expect(resultEmptyPeriod0.timestamps[9999]).toBe(99990n);
       });
       test(`Replacing basePeriod1 in testEmptyPeriod1 should return a value = 9999 in position 9999`, function () {
         expect(resultEmptyPeriod0.values[9999]).toBe(9999);
@@ -278,7 +278,7 @@ describe('Vector', function () {
         expect(resultAfterPeriod1.timestamps.length).toBe(20000);
       });
       test(`Replacing afterPeriod2 in basePeriod1 should return a timestamp = 100000 in position 10000`, function () {
-        expect(resultAfterPeriod1.timestamps[10000]).toBe(100000);
+        expect(resultAfterPeriod1.timestamps[10000]).toBe(100000n);
       });
       test(`Replacing afterPeriod2 in basePeriod1 should return a value = 9999 in position 9999`, function () {
         expect(resultAfterPeriod1.values[9999]).toBe(9999);
@@ -296,7 +296,7 @@ describe('Vector', function () {
         expect(resultLateOverlappingPeriod2.timestamps.length).toBe(15000);
       });
       test(`Replacing lateOverlappingPeriod3 in basePeriod1 should return a timestamp = 100000 in position 10000`, function () {
-        expect(resultLateOverlappingPeriod2.timestamps[10000]).toBe(100000);
+        expect(resultLateOverlappingPeriod2.timestamps[10000]).toBe(100000n);
       });
       test(`Replacing lateOverlappingPeriod3 in basePeriod1 should return a value = 4999 in position 4999`, function () {
         expect(resultLateOverlappingPeriod2.values[4999]).toBe(4999);
@@ -314,7 +314,7 @@ describe('Vector', function () {
         expect(resultReverseLateOverlappingPeriod3.timestamps.length).toBe(15000);
       });
       test(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a timestamp = 99990 in position 9999`, function () {
-        expect(resultReverseLateOverlappingPeriod3.timestamps[9999]).toBe(99990);
+        expect(resultReverseLateOverlappingPeriod3.timestamps[9999]).toBe(99990n);
       });
       test(`Replacing basePeriod1 in lateOverlappingPeriod3 should return a value = 4999 in position 4999`, function () {
         expect(resultReverseLateOverlappingPeriod3.values[4999]).toBe(4999);
@@ -335,7 +335,7 @@ describe('Vector', function () {
         expect(resultInsidePeriod4.timestamps.length).toBe(10000);
       });
       test(`Replacing insidePeriod4 in basePeriod1 should return a timestamp = 49990 in position 4999`, function () {
-        expect(resultInsidePeriod4.timestamps[4999]).toBe(49990);
+        expect(resultInsidePeriod4.timestamps[4999]).toBe(49990n);
       });
       test(`Replacing insidePeriod4 in basePeriod1 should return a value = 2499 in position 2499`, function () {
         expect(resultInsidePeriod4.values[2499]).toBe(2499);
@@ -362,7 +362,7 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
@@ -408,77 +408,77 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        Float64Array.from(Array(arrayLength)).map((_v, k) => k * 10) as Float64Array,
+        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
 
-      resultIncludeOverflowOnTarget = testPeriod1.sliceTime(1000, 99000, SliceMode.IncludeOverflow);
-      resultExcludeOverflowOnTarget = testPeriod1.sliceTime(1000, 99000, SliceMode.ExcludeOverflow);
-      resultIncludeOverflowOffTarget = testPeriod1.sliceTime(995, 99005, SliceMode.IncludeOverflow);
-      resultExcludeOverflowOffTarget = testPeriod1.sliceTime(995, 99005, SliceMode.ExcludeOverflow);
-      resultIncludeOverflowOutside = testPeriod1.sliceTime(-10, 100010, SliceMode.IncludeOverflow);
-      resultExcludeOverflowOutside = testPeriod1.sliceTime(-10, 100010, SliceMode.ExcludeOverflow);
+      resultIncludeOverflowOnTarget = testPeriod1.sliceTime(1000n, 99000n, SliceMode.IncludeOverflow);
+      resultExcludeOverflowOnTarget = testPeriod1.sliceTime(1000n, 99000n, SliceMode.ExcludeOverflow);
+      resultIncludeOverflowOffTarget = testPeriod1.sliceTime(995n, 99005n, SliceMode.IncludeOverflow);
+      resultExcludeOverflowOffTarget = testPeriod1.sliceTime(995n, 99005n, SliceMode.ExcludeOverflow);
+      resultIncludeOverflowOutside = testPeriod1.sliceTime(-10n, 100010n, SliceMode.IncludeOverflow);
+      resultExcludeOverflowOutside = testPeriod1.sliceTime(-10n, 100010n, SliceMode.ExcludeOverflow);
     });
 
     test(`resultIncludeOverflowOnTarget should have timestamp.length = 9801`, function () {
       expect(resultIncludeOverflowOnTarget.timestamps.length).toBe(9801);
     });
     test(`resultIncludeOverflowOnTarget.timestamps[0] should = 1000`, function () {
-      expect(resultIncludeOverflowOnTarget.timestamps[0]).toBe(1000);
+      expect(resultIncludeOverflowOnTarget.timestamps[0]).toBe(1000n);
     });
     test(`resultIncludeOverflowOnTarget.timestamps[9800] should = 99000`, function () {
-      expect(resultIncludeOverflowOnTarget.timestamps[9800]).toBe(99000);
+      expect(resultIncludeOverflowOnTarget.timestamps[9800]).toBe(99000n);
     });
 
     test(`resultExcludeOverflowOnTarget should have timestamp.length = 9801`, function () {
       expect(resultExcludeOverflowOnTarget.timestamps.length).toBe(9801);
     });
     test(`resultExcludeOverflowOnTarget.timestamps[0] should = 1000`, function () {
-      expect(resultExcludeOverflowOnTarget.timestamps[0]).toBe(1000);
+      expect(resultExcludeOverflowOnTarget.timestamps[0]).toBe(1000n);
     });
     test(`resultExcludeOverflowOnTarget.timestamps[9800] should = 99000`, function () {
-      expect(resultExcludeOverflowOnTarget.timestamps[9800]).toBe(99000);
+      expect(resultExcludeOverflowOnTarget.timestamps[9800]).toBe(99000n);
     });
 
     test(`resultIncludeOverflowOffTarget should have timestamp.length = 9803`, function () {
       expect(resultIncludeOverflowOffTarget.timestamps.length).toBe(9803);
     });
     test(`resultIncludeOverflowOffTarget.timestamps[0] should = 990`, function () {
-      expect(resultIncludeOverflowOffTarget.timestamps[0]).toBe(990);
+      expect(resultIncludeOverflowOffTarget.timestamps[0]).toBe(990n);
     });
     test(`resultIncludeOverflowOffTarget.timestamps[9802] should = 99010`, function () {
-      expect(resultIncludeOverflowOffTarget.timestamps[9802]).toBe(99010);
+      expect(resultIncludeOverflowOffTarget.timestamps[9802]).toBe(99010n);
     });
 
     test(`resultExcludeOverflowOffTarget should have timestamp.length = 9801`, function () {
       expect(resultExcludeOverflowOffTarget.timestamps.length).toBe(9801);
     });
     test(`resultExcludeOverflowOffTarget.timestamps[0] should = 1000`, function () {
-      expect(resultExcludeOverflowOffTarget.timestamps[0]).toBe(1000);
+      expect(resultExcludeOverflowOffTarget.timestamps[0]).toBe(1000n);
     });
     test(`resultExcludeOverflowOffTarget.timestamps[9800] should = 99000`, function () {
-      expect(resultExcludeOverflowOffTarget.timestamps[9800]).toBe(99000);
+      expect(resultExcludeOverflowOffTarget.timestamps[9800]).toBe(99000n);
     });
 
     test(`resultIncludeOverflowOutside should have timestamp.length = 10000`, function () {
       expect(resultIncludeOverflowOutside.timestamps.length).toBe(10000);
     });
     test(`resultIncludeOverflowOutside.timestamps[0] should = 0`, function () {
-      expect(resultIncludeOverflowOutside.timestamps[0]).toBe(0);
+      expect(resultIncludeOverflowOutside.timestamps[0]).toBe(0n);
     });
     test(`resultIncludeOverflowOutside.timestamps[9999] should = 99990`, function () {
-      expect(resultIncludeOverflowOutside.timestamps[9999]).toBe(99990);
+      expect(resultIncludeOverflowOutside.timestamps[9999]).toBe(99990n);
     });
 
     test(`resultExcludeOverflowOutside should have timestamp.length = 10000`, function () {
       expect(resultExcludeOverflowOutside.timestamps.length).toBe(10000);
     });
     test(`resultExcludeOverflowOutside.timestamps[0] should = 0`, function () {
-      expect(resultExcludeOverflowOutside.timestamps[0]).toBe(0);
+      expect(resultExcludeOverflowOutside.timestamps[0]).toBe(0n);
     });
     test(`resultExcludeOverflowOutside.timestamps[9999] should = 99990`, function () {
-      expect(resultExcludeOverflowOutside.timestamps[9999]).toBe(99990);
+      expect(resultExcludeOverflowOutside.timestamps[9999]).toBe(99990n);
     });
   });
 });

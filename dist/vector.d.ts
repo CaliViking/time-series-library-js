@@ -6,14 +6,14 @@ import { ValueType } from './values.js';
  * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
  * @returns a new array of sorted unique timestamps
  */
-export declare function sortAndRemoveDuplicates(timestamps: Float64Array): Float64Array;
+export declare function sortAndRemoveDuplicates(timestamps: BigInt64Array): BigInt64Array;
 /**
  * Will combine two time series timestamp arrays
  * @param timestamps1 The first timestamp array
  * @param timestamps2 The second timestamp array
  * @returns The resulting timestamp array
  */
-export declare function combine(timestamps1: Float64Array, timestamps2: Float64Array): Float64Array;
+export declare function combine(timestamps1: BigInt64Array, timestamps2: BigInt64Array): BigInt64Array;
 /**
  * A Vector is a combination of timestamps, values and status codes in one object.
  * Vectors pivots the traditional thinking of a row per point with timestamps, value, status.
@@ -25,7 +25,7 @@ export declare function combine(timestamps1: Float64Array, timestamps2: Float64A
  * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
  */
 export declare class Vector<ThisValueArrayType extends ValueArrayType> {
-    timestamps: Float64Array;
+    timestamps: BigInt64Array;
     values: ThisValueArrayType;
     statuses: Uint32Array;
     /**
@@ -69,7 +69,7 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param statuses
      * @returns A new Vector
      */
-    static fromElements<ValueType extends ValueArrayType>(timestamps: Float64Array, values: ValueType, statuses?: Uint32Array): Vector<ValueType>;
+    static fromElements<ValueType extends ValueArrayType>(timestamps: BigInt64Array, values: ValueType, statuses?: Uint32Array): Vector<ValueType>;
     /**
      * Creates a new vector from an array of time entries [{t,v,s}...{t,v,s}]
      * @param timeEntries in the format [{t,v,s}...{t,v,s}]
@@ -99,7 +99,7 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param mode
      * @returns a new Vector created by the underlying slice method
      */
-    sliceTime(fromTimestamp: number, toTimestamp?: number, mode?: SliceMode): Vector<ThisValueArrayType>;
+    sliceTime(fromTimestamp: bigint, toTimestamp?: bigint, mode?: SliceMode): Vector<ThisValueArrayType>;
     /**
      * Slice the time series vector by cutting off beginning and end based on passed in index positions
      * @param fromIndex The start index position
@@ -138,19 +138,19 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleNone(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
+    resampleNone(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType>;
     /**
      * Will resample the Vector using the Previous interpolation method.
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resamplePrevious(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
+    resamplePrevious(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType>;
     /**
      * Will resample the Vector using the Next interpolation method.
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleNext(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
+    resampleNext(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType>;
     /**
      * Sets the resampled value depending on whether it has been found
      * @param found A flag indicating that it has been found
@@ -165,5 +165,5 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param targetTimestamps The timestamps that we will resample to
      * @returns A new Vector
      */
-    resampleLinear(targetTimestamps: Float64Array): Vector<ThisValueArrayType>;
+    resampleLinear(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType>;
 }

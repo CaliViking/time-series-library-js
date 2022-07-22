@@ -41,7 +41,7 @@ export declare class TimeSeriesPath<ThisValueType extends ValueArrayType> {
      * @param statuses
      * @returns
      */
-    newVectorFromElements(timestamps: Float64Array, values: ThisValueType, statuses?: Uint32Array): TimeSeriesPath<ThisValueType>;
+    newVectorFromElements(timestamps: BigInt64Array, values: ThisValueType, statuses?: Uint32Array): TimeSeriesPath<ThisValueType>;
     /**
      * Creates and sets a new vector based on the passed in array of time entries
      * @param timeEntries
@@ -64,13 +64,13 @@ export declare class TimeSeriesPath<ThisValueType extends ValueArrayType> {
      * @param targetTimestamps The timestamps for resampling
      * @returns The current TimeSeriesPath
      */
-    mutableResample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType>;
+    mutableResample(targetTimestamps: BigInt64Array): TimeSeriesPath<ThisValueType>;
     /**
      * Resamples and returns a new TimeSeriesPath (does not mutilate)
      * @param targetTimestamps The timestamps for resampling
      * @returns A new TimeSeriesPath
      */
-    resample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType>;
+    resample(targetTimestamps: BigInt64Array): TimeSeriesPath<ThisValueType>;
     /**
      * Performs a Scalar or TimeSeries arithmetic operation on the TimeSeriesPath
      * @param operator The operator that shall be used (JavaScript does not allow operators to be passed as parameters)

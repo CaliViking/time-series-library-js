@@ -24,8 +24,8 @@ import { whatsMyType } from './what-is-my-type.js';
  * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
  * @returns a new array of sorted unique timestamps
  */
-export function sortAndRemoveDuplicates(timestamps: Float64Array): Float64Array {
-  return Float64Array.from([...new Set(timestamps.sort((a, b) => a.valueOf() - b.valueOf()))]);
+export function sortAndRemoveDuplicates(timestamps: BigInt64Array): BigInt64Array {
+  return BigInt64Array.from([...new Set(timestamps.sort())]);
 }
 
 /**
@@ -34,8 +34,8 @@ export function sortAndRemoveDuplicates(timestamps: Float64Array): Float64Array 
  * @param timestamps2 The second timestamp array
  * @returns The resulting timestamp array
  */
-export function combine(timestamps1: Float64Array, timestamps2: Float64Array): Float64Array {
-  const combinedTimestamps = new Float64Array(timestamps1.length + timestamps2.length);
+export function combine(timestamps1: BigInt64Array, timestamps2: BigInt64Array): BigInt64Array {
+  const combinedTimestamps = new BigInt64Array(timestamps1.length + timestamps2.length);
   combinedTimestamps.set(timestamps1);
   combinedTimestamps.set(timestamps2, timestamps1.length);
   return sortAndRemoveDuplicates(combinedTimestamps);
@@ -52,7 +52,7 @@ export function combine(timestamps1: Float64Array, timestamps2: Float64Array): F
  * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
  */
 export class Vector<ThisValueArrayType extends ValueArrayType> {
-  timestamps: Float64Array;
+  timestamps: BigInt64Array;
   values: ThisValueArrayType;
   statuses: Uint32Array;
 
@@ -63,7 +63,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    */
   constructor(config?: { dataType: ThisValueArrayType; length: number }) {
     if (config) {
-      this.timestamps = new Float64Array(config.length);
+      this.timestamps = new BigInt64Array(config.length);
       switch (whatsMyType(config.dataType)) {
         case 'Uint8Array':
           (this.values as Uint8Array) = new Uint8Array(config.length);
@@ -132,7 +132,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns
    */
   public createElements(length: number): Vector<ThisValueArrayType> {
-    this.timestamps = new Float64Array(length);
+    this.timestamps = new BigInt64Array(length);
     switch (whatsMyType(this.values)) {
       case 'Uint8Array':
         (this.values as Uint8Array) = new Uint8Array(length);
@@ -182,7 +182,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns A new Vector
    */
   public static fromElements<ValueType extends ValueArrayType>(
-    timestamps: Float64Array,
+    timestamps: BigInt64Array,
     values: ValueType,
     statuses?: Uint32Array
   ): Vector<ValueType> {
@@ -322,8 +322,8 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns a new Vector created by the underlying slice method
    */
   public sliceTime(
-    fromTimestamp: number,
-    toTimestamp: number = this.timestamps[this.timestamps.length - 1],
+    fromTimestamp: bigint,
+    toTimestamp: bigint = this.timestamps[this.timestamps.length - 1],
     mode: SliceMode = SliceMode.IncludeOverflow
   ): Vector<ThisValueArrayType> {
     /** An array that will contain all the time series path objects to be returned */
@@ -481,7 +481,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNone(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
+  public resampleNone(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -536,7 +536,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resamplePrevious(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
+  public resamplePrevious(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -586,7 +586,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNext(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
+  public resampleNext(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -660,7 +660,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleLinear(targetTimestamps: Float64Array): Vector<ThisValueArrayType> {
+  public resampleLinear(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -704,8 +704,8 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
           returnVector.values[targetIndex] =
             (this.values[objectIndex] as number) +
             (((this.values[objectIndex + 1] as number) - (this.values[objectIndex] as number)) *
-              (targetTimestamps[targetIndex].valueOf() - this.timestamps[objectIndex].valueOf())) /
-              (this.timestamps[objectIndex + 1].valueOf() - this.timestamps[objectIndex].valueOf());
+              (Number(targetTimestamps[targetIndex] - this.timestamps[objectIndex]) /
+              Number(this.timestamps[objectIndex + 1] - this.timestamps[objectIndex])));
           returnVector.statuses[targetIndex] =
             this.statuses[objectIndex] > this.statuses[objectIndex + 1]
               ? this.statuses[objectIndex]

@@ -16,7 +16,7 @@ import { whatsMyType } from './what-is-my-type.js';
  * @returns a new array of sorted unique timestamps
  */
 export function sortAndRemoveDuplicates(timestamps) {
-    return Float64Array.from([...new Set(timestamps.sort((a, b) => a.valueOf() - b.valueOf()))]);
+    return BigInt64Array.from([...new Set(timestamps.sort())]);
 }
 /**
  * Will combine two time series timestamp arrays
@@ -25,7 +25,7 @@ export function sortAndRemoveDuplicates(timestamps) {
  * @returns The resulting timestamp array
  */
 export function combine(timestamps1, timestamps2) {
-    const combinedTimestamps = new Float64Array(timestamps1.length + timestamps2.length);
+    const combinedTimestamps = new BigInt64Array(timestamps1.length + timestamps2.length);
     combinedTimestamps.set(timestamps1);
     combinedTimestamps.set(timestamps2, timestamps1.length);
     return sortAndRemoveDuplicates(combinedTimestamps);
@@ -48,7 +48,7 @@ export class Vector {
      */
     constructor(config) {
         if (config) {
-            this.timestamps = new Float64Array(config.length);
+            this.timestamps = new BigInt64Array(config.length);
             switch (whatsMyType(config.dataType)) {
                 case 'Uint8Array':
                     this.values = new Uint8Array(config.length);
@@ -101,10 +101,9 @@ export class Vector {
      * Validates that the Vector is valid
      */
     validate() {
-        var _a, _b, _c, _d;
         // Array lengths
-        return (((_a = this.timestamps) === null || _a === void 0 ? void 0 : _a.length) === ((_b = this.values) === null || _b === void 0 ? void 0 : _b.length) &&
-            ((_c = this.timestamps) === null || _c === void 0 ? void 0 : _c.length) === ((_d = this.statuses) === null || _d === void 0 ? void 0 : _d.length));
+        return (this.timestamps?.length === this.values?.length &&
+            this.timestamps?.length === this.statuses?.length);
     }
     /**
      * This will create new elements on an existing Vector. Used to reset the Vector.
@@ -112,7 +111,7 @@ export class Vector {
      * @returns
      */
     createElements(length) {
-        this.timestamps = new Float64Array(length);
+        this.timestamps = new BigInt64Array(length);
         switch (whatsMyType(this.values)) {
             case 'Uint8Array':
                 this.values = new Uint8Array(length);
@@ -581,8 +580,8 @@ export class Vector {
                     returnVector.values[targetIndex] =
                         this.values[objectIndex] +
                             ((this.values[objectIndex + 1] - this.values[objectIndex]) *
-                                (targetTimestamps[targetIndex].valueOf() - this.timestamps[objectIndex].valueOf())) /
-                                (this.timestamps[objectIndex + 1].valueOf() - this.timestamps[objectIndex].valueOf());
+                                (Number(targetTimestamps[targetIndex] - this.timestamps[objectIndex]) /
+                                    Number(this.timestamps[objectIndex + 1] - this.timestamps[objectIndex])));
                     returnVector.statuses[targetIndex] =
                         this.statuses[objectIndex] > this.statuses[objectIndex + 1]
                             ? this.statuses[objectIndex]

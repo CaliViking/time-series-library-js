@@ -1,11 +1,11 @@
 import { ValueType } from './values.js';
 
 /**  t = timestamp, v = value, s = severity */
-export type TimeEntry<ThisValueType extends ValueType> = { t: number; v: ThisValueType; s?: number };
+export type TimeEntry<ThisValueType extends ValueType> = { t: bigint; v: ThisValueType; s?: number };
 /** Extends TimeEntry, id = sourceId  */
 export type NamedTimeEntry<ThisValueType extends ValueType> = { id: string } & TimeEntry<ThisValueType>;
 /** Array containing [timestamp, value, status code] */
-export type TimeEntryArray<ThisValueType extends ValueType> = [number, ThisValueType, number];
+export type TimeEntryArray<ThisValueType extends ValueType> = [bigint, ThisValueType, number];
 /** Array containing [sourceId, timestamp, value, status code] */
 export type NamedTimeEntryArray<ThisValueType extends ValueType> = [string, ...TimeEntryArray<ThisValueType>];
 

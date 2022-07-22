@@ -35,6 +35,7 @@
     "signal processing"
   ],
   "dependencies": {
+    "@js-temporal/polyfill": "^0.4.2",
     "dayjs": "^1.11.3"
   }
 }

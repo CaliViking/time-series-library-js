@@ -15,7 +15,7 @@ enum CompareReturn {
  * @param target The value you are comparing with
  * @returns An CompareReturn enum that determines if the value is before, at, or after the target
  */
-function compare(value: number, target: number): CompareReturn {
+function compare(value: bigint, target: bigint): CompareReturn {
   // For performance reasons: Comparing inequalities first as they are more likely to happen than the equality
   if (value < target) {
     return CompareReturn.ValueBeforeTarget;
@@ -36,8 +36,8 @@ function compare(value: number, target: number): CompareReturn {
  * @returns The found index number
  */
 export function forwardFindIndex(
-  sortedArray: Float64Array,
-  target: number,
+  sortedArray: BigInt64Array,
+  target: bigint,
   mode: IndexMode = IndexMode.Exclusive
 ): number {
   /** The minimum edge of the window where the function is looking for the value */
@@ -150,8 +150,8 @@ export function forwardFindIndex(
  * @returns The found index number
  */
 export function reverseFindIndex(
-  sortedArray: Float64Array,
-  target: number,
+  sortedArray: BigInt64Array,
+  target: bigint,
   mode: IndexMode = IndexMode.Exclusive
 ): number {
   /** The minimum edge of the window where the function is looking for the value */

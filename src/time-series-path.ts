@@ -128,7 +128,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @returns
    */
   public newVectorFromElements(
-    timestamps: Float64Array,
+    timestamps: BigInt64Array,
     values: ThisValueType,
     statuses?: Uint32Array
   ): TimeSeriesPath<ThisValueType> {
@@ -169,7 +169,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @param targetTimestamps The timestamps for resampling
    * @returns The current TimeSeriesPath
    */
-  public mutableResample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType> {
+  public mutableResample(targetTimestamps: BigInt64Array): TimeSeriesPath<ThisValueType> {
     switch (this.interpolationMethod) {
       case InterpolationMethod.none: {
         this.vector = this.vector.resampleNone(targetTimestamps);
@@ -198,7 +198,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
    * @param targetTimestamps The timestamps for resampling
    * @returns A new TimeSeriesPath
    */
-  public resample(targetTimestamps: Float64Array): TimeSeriesPath<ThisValueType> {
+  public resample(targetTimestamps: BigInt64Array): TimeSeriesPath<ThisValueType> {
     const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = this.deepClone();
 
     switch (this.interpolationMethod) {
@@ -409,7 +409,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
     const returnTimeSeriesPath = new TimeSeriesPath<Float64Array>(this.interpolationMethod);
 
     // Create a unique array of all the timestamps
-    const targetTimestamps: Float64Array = combine(this.vector.timestamps, operand.vector.timestamps);
+    const targetTimestamps: BigInt64Array = combine(this.vector.timestamps, operand.vector.timestamps);
     // Arithmetic Operators only work on numbers
     const targetVector = new Vector<Float64Array>({ dataType: NumberArrayDataType, length: targetTimestamps.length });
     targetVector.timestamps = targetTimestamps;
@@ -542,7 +542,7 @@ export class TimeSeriesPath<ThisValueType extends ValueArrayType> {
     if (timeSeriesPeriods.length === 0) {
       throw Error('cannot pass 0 length array to aggregate function');
     }
-    let targetTimestamps: Float64Array = new Float64Array();
+    let targetTimestamps: BigInt64Array = new BigInt64Array();
     const interimTimeSeriesPeriods: TimeSeriesPath<ThisValueType>[] = [];
     const returnTimeSeriesPeriod: TimeSeriesPath<ThisValueType> = new TimeSeriesPath<ThisValueType>(
       InterpolationMethod.linear

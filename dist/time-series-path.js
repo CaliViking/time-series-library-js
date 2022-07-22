@@ -77,7 +77,7 @@ export class TimeSeriesPath {
      */
     clone() {
         const returnTimeSeriesPath = new TimeSeriesPath(this.interpolationMethod);
-        Object.assign(returnTimeSeriesPath, Object.assign({}, this));
+        Object.assign(returnTimeSeriesPath, { ...this });
         returnTimeSeriesPath.vector = this.vector;
         return returnTimeSeriesPath;
     }
@@ -190,7 +190,6 @@ export class TimeSeriesPath {
      * @returns
      */
     arithmeticOperator(operator, operand) {
-        var _a;
         let returnTimeSeriesPeriod;
         switch (typeof operand) {
             case 'boolean':
@@ -201,7 +200,7 @@ export class TimeSeriesPath {
             }
             case 'object': {
                 const argType = whatsMyType(operand);
-                const vectorType = whatsMyType((_a = operand.vector) === null || _a === void 0 ? void 0 : _a.values);
+                const vectorType = whatsMyType(operand.vector?.values);
                 if (operand === null) {
                     returnTimeSeriesPeriod = this.arithmeticOperatorScalar(operator, operand);
                 }
@@ -296,7 +295,7 @@ export class TimeSeriesPath {
                 }
                 case '**': {
                     for (let i = 0; i < thisTimeSeriesPeriod.vector.timestamps.length; i++) {
-                        thisTimeSeriesPeriod.vector.values[i] = Math.pow(this.vector.values[i], operand);
+                        thisTimeSeriesPeriod.vector.values[i] = this.vector.values[i] ** operand;
                     }
                     break;
                 }
@@ -409,7 +408,7 @@ export class TimeSeriesPath {
             case '**': {
                 for (let i = 0; i < targetTimestamps.length; i++) {
                     targetVector.values[i] =
-                        Math.pow(thisTimeSeriesPeriod.vector.values[i], argTimeSeriesPeriod.vector.values[i]);
+                        thisTimeSeriesPeriod.vector.values[i] ** argTimeSeriesPeriod.vector.values[i];
                     targetVector.statuses[i] =
                         thisTimeSeriesPeriod.vector.statuses[i] > argTimeSeriesPeriod.vector.statuses[i]
                             ? thisTimeSeriesPeriod.vector.statuses[i]
@@ -469,7 +468,7 @@ export class TimeSeriesPath {
         if (timeSeriesPeriods.length === 0) {
             throw Error('cannot pass 0 length array to aggregate function');
         }
-        let targetTimestamps = new Float64Array();
+        let targetTimestamps = new BigInt64Array();
         const interimTimeSeriesPeriods = [];
         const returnTimeSeriesPeriod = new TimeSeriesPath(InterpolationMethod.linear);
         // Get all unique timestamps

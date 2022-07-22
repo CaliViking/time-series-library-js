@@ -7,7 +7,7 @@ import { timestamp, TimestampArray } from './timestamp.js';
  * @param mode The type of search
  * @returns The found index number
  */
-export declare function forwardFindIndex(sortedArray: TimestampArray, target: timestamp, mode?: IndexMode): number;
+export declare function forwardFindIndex(sortedArray: TimestampArray, target: timestamp, mode?: IndexMode): number | null;
 /**
  * Returns an index value representing the found target
  * @param target The value that you are looking for

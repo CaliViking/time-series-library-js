@@ -40,7 +40,7 @@ export function forwardFindIndex(
   sortedArray: TimestampArray,
   target: timestamp,
   mode: IndexMode = IndexMode.Exclusive
-): number {
+): number | null {
   /** The minimum edge of the window where the function is looking for the value */
   let valueCursorMin = 0;
   /** The maximum edge of the window where the function is looking for the value */

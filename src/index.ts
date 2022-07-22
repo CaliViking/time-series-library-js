@@ -11,3 +11,4 @@ export * from './what-is-my-type.js';
 export * from './values.js';
 export * from './index-mode.js';
 export * from './slice-mode.js';
+export * from './timestamp.js';

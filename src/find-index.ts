@@ -1,4 +1,5 @@
 import { IndexMode } from './index-mode.js';
+import { timestamp, TimestampArray } from './timestamp.js';
 
 enum CompareReturn {
   /** The value is before the target */
@@ -15,7 +16,7 @@ enum CompareReturn {
  * @param target The value you are comparing with
  * @returns An CompareReturn enum that determines if the value is before, at, or after the target
  */
-function compare(value: bigint, target: bigint): CompareReturn {
+function compare(value: timestamp, target: timestamp): CompareReturn {
   // For performance reasons: Comparing inequalities first as they are more likely to happen than the equality
   if (value < target) {
     return CompareReturn.ValueBeforeTarget;
@@ -36,8 +37,8 @@ function compare(value: bigint, target: bigint): CompareReturn {
  * @returns The found index number
  */
 export function forwardFindIndex(
-  sortedArray: BigInt64Array,
-  target: bigint,
+  sortedArray: TimestampArray,
+  target: timestamp,
   mode: IndexMode = IndexMode.Exclusive
 ): number {
   /** The minimum edge of the window where the function is looking for the value */
@@ -150,8 +151,8 @@ export function forwardFindIndex(
  * @returns The found index number
  */
 export function reverseFindIndex(
-  sortedArray: BigInt64Array,
-  target: bigint,
+  sortedArray: TimestampArray,
+  target: timestamp,
   mode: IndexMode = IndexMode.Exclusive
 ): number {
   /** The minimum edge of the window where the function is looking for the value */

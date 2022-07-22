@@ -8,7 +8,7 @@ import {
   Vector,
 } from '../src/index.js';
 import { whatsMyType } from '../src/what-is-my-type.js';
-import { Temporal } from '@js-temporal/polyfill';
+import { TimestampArray } from '../src/timestamp.js';
 
 describe('time-series-path', function () {
   describe('Severity', function () {
@@ -111,7 +111,7 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       beforeAll(function () {
         testPeriod.newVectorFromElements(
-          new BigInt64Array(arrayLength).map((v_, k) => BigInt(k * 1000)),
+          new TimestampArray(arrayLength).map((v_, k) => BigInt(k * 1000)),
           Float64Array.from(Array(arrayLength).keys()),
           Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
         );
@@ -128,7 +128,7 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       beforeAll(function () {
         testPeriod.newVectorFromElements(
-          new BigInt64Array(arrayLength).map((_v, k) => BigInt(k)),
+          new TimestampArray(arrayLength).map((_v, k) => BigInt(k)),
           Float64Array.from(Array(arrayLength).keys())
         );
       });
@@ -144,7 +144,7 @@ describe('time-series-path', function () {
       const arrayLength = 100000;
       const testLocation = 1000;
       testPeriod.newVectorFromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
@@ -177,8 +177,8 @@ describe('time-series-path', function () {
       let testPeriod1: TimeSeriesPath<Float64Array>;
       let testPeriod2: TimeSeriesPath<Float64Array>;
       const originalValues = new Float64Array(arrayLength).map((v_, k) => k);
-      const originalTimestamps = new BigInt64Array(arrayLength).map((v_, k) => BigInt(k * 4));
-      const resampleTimestamps = new BigInt64Array(arrayLength * 4).map((v_, k) => BigInt(k));
+      const originalTimestamps = new TimestampArray(arrayLength).map((v_, k) => BigInt(k * 4));
+      const resampleTimestamps = new TimestampArray(arrayLength * 4).map((v_, k) => BigInt(k));
       beforeAll(function () {
         testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.linear);
         // Resample to 4 times the original frequency
@@ -205,9 +205,9 @@ describe('time-series-path', function () {
     describe('resample() previous', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.previous);
       const arrayLength = 5;
-      const originalTimestamps = new BigInt64Array(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
+      const originalTimestamps = new TimestampArray(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
       const originalValues = new Float64Array(arrayLength).map((v_, k) => k);
-      const resampleTimestamps = new BigInt64Array(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
+      const resampleTimestamps = new TimestampArray(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= arrayLength * 4
@@ -234,9 +234,9 @@ describe('time-series-path', function () {
     describe('resample() next', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.next);
       const arrayLength = 5;
-      const originalTimestamps = new BigInt64Array(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
+      const originalTimestamps = new TimestampArray(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const resampleTimestamps = new BigInt64Array(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
+      const resampleTimestamps = new TimestampArray(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= (arrayLength - 1) * 4 + 1
@@ -265,9 +265,9 @@ describe('time-series-path', function () {
     describe('resample() none', function () {
       const testPeriod1 = new TimeSeriesPath<Float64Array>(InterpolationMethod.none);
       const arrayLength = 5;
-      const originalTimestamps = new BigInt64Array(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
+      const originalTimestamps = new TimestampArray(arrayLength).map((v_, k) => BigInt(k * 4 + 1));
       const originalValues = Float64Array.from(Array(arrayLength).keys());
-      const resampleTimestamps = new BigInt64Array(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
+      const resampleTimestamps = new TimestampArray(arrayLength * 4 + 2).map((v_, k) => BigInt(k)); // Make sure the timestamps are outside the original array
       // Resample to 4 times the original frequency
       const expectedResampleValues = Float64Array.from(Array(arrayLength * 4 + 2).keys()).map((v) =>
         v >= 1 && v <= (arrayLength - 1) * 4 + 1 ? ((v - 1) % 4 === 0 ? (v - 1) / 4 : NaN) : NaN
@@ -296,11 +296,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod1.add(testPeriod2);
         });
 
@@ -327,11 +327,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.add(testScalarValue);
         });
 
@@ -434,11 +434,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod1.subtract(testPeriod2);
         });
 
@@ -465,11 +465,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.subtract(testScalarValue);
         });
 
@@ -497,11 +497,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((_v, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((_v, k) => BigInt(k)));
           testPeriod3 = testPeriod1.multiply(testPeriod2);
         });
 
@@ -522,11 +522,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.multiply(testScalarValue);
         });
 
@@ -547,11 +547,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod1.divide(testPeriod2);
         });
 
@@ -570,11 +570,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.divide(testScalarValue);
         });
 
@@ -595,11 +595,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod1.pow(testPeriod2);
         });
 
@@ -620,11 +620,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.pow(testScalarValue);
         });
 
@@ -645,11 +645,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod1.remainder(testPeriod2);
         });
 
@@ -670,11 +670,11 @@ describe('time-series-path', function () {
 
         beforeAll(function () {
           testPeriod1.newVectorFromElements(
-            new BigInt64Array(arrayLength).map((v_, k) => BigInt(2 * k)),
+            new TimestampArray(arrayLength).map((v_, k) => BigInt(2 * k)),
             Float64Array.from(Array(arrayLength).keys()),
             Uint32Array.from({ length: arrayLength }, () => Severity.Good)
           );
-          testPeriod2 = testPeriod1.resample(new BigInt64Array(arrayLength * 2).map((v_, k) => BigInt(k)));
+          testPeriod2 = testPeriod1.resample(new TimestampArray(arrayLength * 2).map((v_, k) => BigInt(k)));
           testPeriod3 = testPeriod2.remainder(testScalarValue);
         });
 
@@ -693,7 +693,7 @@ describe('time-series-path', function () {
 
       beforeAll(function () {
         testPeriod1.newVectorFromElements(
-          new BigInt64Array(arrayLength).map((v_, k) => BigInt(k)),
+          new TimestampArray(arrayLength).map((v_, k) => BigInt(k)),
           Float64Array.from(Array(arrayLength).keys()),
           Uint32Array.from({ length: arrayLength }, () => Severity.Good)
         );
@@ -714,7 +714,7 @@ describe('time-series-path', function () {
 
       beforeAll(function () {
         testPeriod1.newVectorFromElements(
-          new BigInt64Array(arrayLength).map((v_, k) => BigInt(k)),
+          new TimestampArray(arrayLength).map((v_, k) => BigInt(k)),
           Float64Array.from(Array(arrayLength).keys()),
           Uint32Array.from({ length: arrayLength }, () => Severity.Good)
         );

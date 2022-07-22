@@ -12,6 +12,7 @@ import { SliceMode } from './slice-mode.js';
 import { ArrayPositions, TimeEntry, TimeEntryArray } from './time-entry.js';
 import { ValueType } from './values.js';
 import { whatsMyType } from './what-is-my-type.js';
+import { timestamp, TimestampArray } from './timestamp.js';
 
 /*
  * Some implementation choices:
@@ -24,8 +25,8 @@ import { whatsMyType } from './what-is-my-type.js';
  * Takes a set of unordered and duplicated timestamps, sorts them, and removes the duplicates
  * @returns a new array of sorted unique timestamps
  */
-export function sortAndRemoveDuplicates(timestamps: BigInt64Array): BigInt64Array {
-  return BigInt64Array.from([...new Set(timestamps.sort())]);
+export function sortAndRemoveDuplicates(timestamps: TimestampArray): TimestampArray {
+  return TimestampArray.from([...new Set(timestamps.sort())]);
 }
 
 /**
@@ -34,8 +35,8 @@ export function sortAndRemoveDuplicates(timestamps: BigInt64Array): BigInt64Arra
  * @param timestamps2 The second timestamp array
  * @returns The resulting timestamp array
  */
-export function combine(timestamps1: BigInt64Array, timestamps2: BigInt64Array): BigInt64Array {
-  const combinedTimestamps = new BigInt64Array(timestamps1.length + timestamps2.length);
+export function combine(timestamps1: TimestampArray, timestamps2: TimestampArray): TimestampArray {
+  const combinedTimestamps = new TimestampArray(timestamps1.length + timestamps2.length);
   combinedTimestamps.set(timestamps1);
   combinedTimestamps.set(timestamps2, timestamps1.length);
   return sortAndRemoveDuplicates(combinedTimestamps);
@@ -52,7 +53,7 @@ export function combine(timestamps1: BigInt64Array, timestamps2: BigInt64Array):
  * Vectors enables multiple arrays for values to be represented in the same Vector (beyond this Vector class). This allows aggregators to communicate max, min, average, sum in an expanded vector.
  */
 export class Vector<ThisValueArrayType extends ValueArrayType> {
-  timestamps: BigInt64Array;
+  timestamps: TimestampArray;
   values: ThisValueArrayType;
   statuses: Uint32Array;
 
@@ -63,7 +64,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    */
   constructor(config?: { dataType: ThisValueArrayType; length: number }) {
     if (config) {
-      this.timestamps = new BigInt64Array(config.length);
+      this.timestamps = new TimestampArray(config.length);
       switch (whatsMyType(config.dataType)) {
         case 'Uint8Array':
           (this.values as Uint8Array) = new Uint8Array(config.length);
@@ -132,7 +133,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns
    */
   public createElements(length: number): Vector<ThisValueArrayType> {
-    this.timestamps = new BigInt64Array(length);
+    this.timestamps = new TimestampArray(length);
     switch (whatsMyType(this.values)) {
       case 'Uint8Array':
         (this.values as Uint8Array) = new Uint8Array(length);
@@ -182,7 +183,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns A new Vector
    */
   public static fromElements<ValueType extends ValueArrayType>(
-    timestamps: BigInt64Array,
+    timestamps: TimestampArray,
     values: ValueType,
     statuses?: Uint32Array
   ): Vector<ValueType> {
@@ -322,8 +323,8 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @returns a new Vector created by the underlying slice method
    */
   public sliceTime(
-    fromTimestamp: bigint,
-    toTimestamp: bigint = this.timestamps[this.timestamps.length - 1],
+    fromTimestamp: timestamp,
+    toTimestamp: timestamp = this.timestamps[this.timestamps.length - 1],
     mode: SliceMode = SliceMode.IncludeOverflow
   ): Vector<ThisValueArrayType> {
     /** An array that will contain all the time series path objects to be returned */
@@ -481,7 +482,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNone(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
+  public resampleNone(targetTimestamps: TimestampArray): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -536,7 +537,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resamplePrevious(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
+  public resamplePrevious(targetTimestamps: TimestampArray): Vector<ThisValueArrayType> {
     const returnVector = new Vector<ThisValueArrayType>({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -586,7 +587,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleNext(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
+  public resampleNext(targetTimestamps: TimestampArray): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();
@@ -660,7 +661,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param targetTimestamps The timestamps that we will resample to
    * @returns A new Vector
    */
-  public resampleLinear(targetTimestamps: BigInt64Array): Vector<ThisValueArrayType> {
+  public resampleLinear(targetTimestamps: TimestampArray): Vector<ThisValueArrayType> {
     const returnVector = new Vector({ dataType: this.values, length: targetTimestamps.length });
     returnVector.timestamps = targetTimestamps;
     returnVector.setBad();

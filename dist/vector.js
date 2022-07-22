@@ -5,6 +5,7 @@ import { Severity } from './severity.js';
 import { SliceMode } from './slice-mode.js';
 import { ArrayPositions } from './time-entry.js';
 import { whatsMyType } from './what-is-my-type.js';
+import { TimestampArray } from './timestamp.js';
 /*
  * Some implementation choices:
  * - I have deliberately chosen to use for loops instead of forEach and map/reduce. The reason is primarily performance
@@ -16,7 +17,7 @@ import { whatsMyType } from './what-is-my-type.js';
  * @returns a new array of sorted unique timestamps
  */
 export function sortAndRemoveDuplicates(timestamps) {
-    return BigInt64Array.from([...new Set(timestamps.sort())]);
+    return TimestampArray.from([...new Set(timestamps.sort())]);
 }
 /**
  * Will combine two time series timestamp arrays
@@ -25,7 +26,7 @@ export function sortAndRemoveDuplicates(timestamps) {
  * @returns The resulting timestamp array
  */
 export function combine(timestamps1, timestamps2) {
-    const combinedTimestamps = new BigInt64Array(timestamps1.length + timestamps2.length);
+    const combinedTimestamps = new TimestampArray(timestamps1.length + timestamps2.length);
     combinedTimestamps.set(timestamps1);
     combinedTimestamps.set(timestamps2, timestamps1.length);
     return sortAndRemoveDuplicates(combinedTimestamps);
@@ -48,7 +49,7 @@ export class Vector {
      */
     constructor(config) {
         if (config) {
-            this.timestamps = new BigInt64Array(config.length);
+            this.timestamps = new TimestampArray(config.length);
             switch (whatsMyType(config.dataType)) {
                 case 'Uint8Array':
                     this.values = new Uint8Array(config.length);
@@ -111,7 +112,7 @@ export class Vector {
      * @returns
      */
     createElements(length) {
-        this.timestamps = new BigInt64Array(length);
+        this.timestamps = new TimestampArray(length);
         switch (whatsMyType(this.values)) {
             case 'Uint8Array':
                 this.values = new Uint8Array(length);

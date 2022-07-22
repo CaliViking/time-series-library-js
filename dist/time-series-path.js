@@ -12,6 +12,7 @@ import { Severity } from './severity.js';
 import { Vector, combine } from './vector.js';
 import { BooleanArrayDataType, NumberArrayDataType } from './values.js';
 import { whatsMyType } from './what-is-my-type.js';
+import { TimestampArray } from './timestamp.js';
 /**
  * A rich class representing time series data as a path
  */
@@ -468,7 +469,7 @@ export class TimeSeriesPath {
         if (timeSeriesPeriods.length === 0) {
             throw Error('cannot pass 0 length array to aggregate function');
         }
-        let targetTimestamps = new BigInt64Array();
+        let targetTimestamps = new TimestampArray();
         const interimTimeSeriesPeriods = [];
         const returnTimeSeriesPeriod = new TimeSeriesPath(InterpolationMethod.linear);
         // Get all unique timestamps

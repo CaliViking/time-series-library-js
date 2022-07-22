@@ -1,7 +1,8 @@
+import { timestamp } from './timestamp.js';
 import { ValueType } from './values.js';
 /**  t = timestamp, v = value, s = severity */
 export declare type TimeEntry<ThisValueType extends ValueType> = {
-    t: bigint;
+    t: timestamp;
     v: ThisValueType;
     s?: number;
 };
@@ -10,7 +11,7 @@ export declare type NamedTimeEntry<ThisValueType extends ValueType> = {
     id: string;
 } & TimeEntry<ThisValueType>;
 /** Array containing [timestamp, value, status code] */
-export declare type TimeEntryArray<ThisValueType extends ValueType> = [bigint, ThisValueType, number];
+export declare type TimeEntryArray<ThisValueType extends ValueType> = [timestamp, ThisValueType, number];
 /** Array containing [sourceId, timestamp, value, status code] */
 export declare type NamedTimeEntryArray<ThisValueType extends ValueType> = [string, ...TimeEntryArray<ThisValueType>];
 export declare enum ArrayPositions {

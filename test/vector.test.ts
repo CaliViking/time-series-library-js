@@ -9,6 +9,7 @@ import {
   Severity,
   SliceMode,
 } from '../src/index.js';
+import { TimestampArray } from '../src/timestamp.js';
 
 describe('Vector', function () {
   describe('forwardFindIndex', function () {
@@ -17,7 +18,7 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
@@ -60,7 +61,7 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
@@ -113,19 +114,19 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testVector1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         new Float64Array(arrayLength).map((_v: number, k: number) => k),
         new Uint32Array(arrayLength).fill(Severity.Good)
       );
       // Create testPeriod2 so that it does not overlap testPeriod1
       testVector2 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 2),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create testPeriod3 so that it does overlap testPeriod1
       testVector3 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 4),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
@@ -193,7 +194,7 @@ describe('Vector', function () {
     beforeAll(function () {
       for (let i = 0; i < 5; i++) {
         const tempPeriod = Vector.fromElements(
-          new BigInt64Array(arrayLength).map((_v, k) => BigInt((i * arrayLength + k) * 10)),
+          new TimestampArray(arrayLength).map((_v, k) => BigInt((i * arrayLength + k) * 10)),
           new Float64Array(arrayLength).map((_v: number, k: number) => k),
           new Uint32Array(arrayLength).fill(Severity.Good)
         );
@@ -227,25 +228,25 @@ describe('Vector', function () {
 
     beforeAll(function () {
       basePeriod1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create afterPeriod2 so that it does not overlap testPeriod1
       afterPeriod2 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(arrayLength * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 2),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create lateOverlappingPeriod3 so that it does overlap and is later than testPeriod1
       lateOverlappingPeriod3 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(Math.floor(arrayLength / 2) * 10 + k * 10)),
         Float64Array.from({ length: arrayLength }, () => 4),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
       // Create insidePeriod4 so that it is inside testPeriod1
       insidePeriod4 = Vector.fromElements(
-        new BigInt64Array(Math.floor(arrayLength / 2)).map((_v, k) =>
+        new TimestampArray(Math.floor(arrayLength / 2)).map((_v, k) =>
           BigInt(Math.floor(arrayLength / 4) * 10 + k * 10)
         ),
         Float64Array.from({ length: Math.floor(arrayLength / 2) }, () => 6),
@@ -362,7 +363,7 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );
@@ -408,7 +409,7 @@ describe('Vector', function () {
 
     beforeAll(function () {
       testPeriod1 = Vector.fromElements(
-        new BigInt64Array(arrayLength).map((_v, k) => BigInt(k * 10)),
+        new TimestampArray(arrayLength).map((_v, k) => BigInt(k * 10)),
         Float64Array.from(Array(arrayLength).keys()),
         Uint32Array.from({ length: arrayLength }, () => Severity.Good) as Uint32Array
       );

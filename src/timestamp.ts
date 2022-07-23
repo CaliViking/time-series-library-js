@@ -1,11 +1,11 @@
-export class TimestampArray extends Float64Array {
-  // BigInt64Array
+export class TimestampArray extends BigInt64Array {
+  // BigInt64Array, Float64Array
   constructor(length?: number) {
     super(length);
   }
 }
-export type timestamp = number; // bigint
+export type timestamp = bigint; // bigint, number
 
 export function Timestamp(value: string | number | bigint | boolean) {
-  return Number(value);
+  return BigInt(value); // BigInt, Number
 }

@@ -1,9 +1,9 @@
-export class TimestampArray extends Float64Array {
-    // BigInt64Array
+export class TimestampArray extends BigInt64Array {
+    // BigInt64Array, Float64Array
     constructor(length) {
         super(length);
     }
 }
 export function Timestamp(value) {
-    return Number(value);
+    return BigInt(value); // BigInt, Number
 }

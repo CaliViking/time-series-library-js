@@ -70,19 +70,19 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param statuses
      * @returns A new Vector
      */
-    static fromElements<ValueType extends ValueArrayType>(timestamps: TimestampArray, values: ValueType, statuses?: Uint32Array): Vector<ValueType>;
+    static fromElements<ThisValueArrayType extends ValueArrayType>(timestamps: TimestampArray, values: ThisValueArrayType, statuses?: Uint32Array): Vector<ThisValueArrayType>;
     /**
      * Creates a new vector from an array of time entries [{t,v,s}...{t,v,s}]
      * @param timeEntries in the format [{t,v,s}...{t,v,s}]
      * @returns A new Vector
      */
-    static fromTimeEntries(timeEntries: TimeEntry<ValueType>[]): Vector<ValueArrayType>;
+    static fromTimeEntries<ThisValueType extends ValueType>(timeEntries: TimeEntry<ThisValueType>[]): Vector<ValueArrayType>;
     /**
      * Creates a new vector from an array of time entry arrays [[t,v,s]...[t,v,s]]
      * @param timeEntryArrays in the format [[t,v,s]...[t,v,s]]
      * @returns A new Vector
      */
-    static fromTimeEntryArrays(timeEntryArrays: TimeEntryArray<ValueType>[]): Vector<ValueArrayType>;
+    static fromTimeEntryArrays<ThisValueType extends ValueType>(timeEntryArrays: TimeEntryArray<ThisValueType>[]): Vector<ValueArrayType>;
     /**
      *
      * @returns An array of TimeEntry [{t,v,s}...{t,v,s}]
@@ -127,7 +127,7 @@ export declare class Vector<ThisValueArrayType extends ValueArrayType> {
      * @param concatVectors The array of time series paths that shall be concatenated together
      * @returns A single time series path with all the paths concatenated together
      */
-    static multiConcat<ValueType extends ValueArrayType>(concatVectors: Vector<ValueType>[]): Vector<ValueType>;
+    static multiConcat<ThisValueArrayType extends ValueArrayType>(concatVectors: Vector<ThisValueArrayType>[]): Vector<ThisValueArrayType>;
     /**
      * Replaces the section of the existing vector with the time period for the new vector
      * @param timeSeriesVector The new time series vector that will be used to replace the existing

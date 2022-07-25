@@ -182,11 +182,11 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param statuses
    * @returns A new Vector
    */
-  public static fromElements<ValueType extends ValueArrayType>(
+  public static fromElements<ThisValueArrayType extends ValueArrayType>(
     timestamps: TimestampArray,
-    values: ValueType,
+    values: ThisValueArrayType,
     statuses?: Uint32Array
-  ): Vector<ValueType> {
+  ): Vector<ThisValueArrayType> {
     // let dataType: ValueType;
     const returnVector = new Vector({ dataType: values, length: timestamps.length });
 
@@ -219,7 +219,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param timeEntries in the format [{t,v,s}...{t,v,s}]
    * @returns A new Vector
    */
-  public static fromTimeEntries(timeEntries: TimeEntry<ValueType>[]): Vector<ValueArrayType> {
+  public static fromTimeEntries<ThisValueType extends ValueType>(timeEntries: TimeEntry<ThisValueType>[]): Vector<ValueArrayType> {
     if (timeEntries.length === 0) {
       throw Error('Unable to tell data type from an array with length 0');
     }
@@ -256,7 +256,7 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param timeEntryArrays in the format [[t,v,s]...[t,v,s]]
    * @returns A new Vector
    */
-  public static fromTimeEntryArrays(timeEntryArrays: TimeEntryArray<ValueType>[]): Vector<ValueArrayType> {
+  public static fromTimeEntryArrays<ThisValueType extends ValueType>(timeEntryArrays: TimeEntryArray<ThisValueType>[]): Vector<ValueArrayType> {
     if (timeEntryArrays.length === 0) {
       throw Error('Unable to tell data type from an array with length 0');
     }
@@ -438,12 +438,12 @@ export class Vector<ThisValueArrayType extends ValueArrayType> {
    * @param concatVectors The array of time series paths that shall be concatenated together
    * @returns A single time series path with all the paths concatenated together
    */
-  public static multiConcat<ValueType extends ValueArrayType>(concatVectors: Vector<ValueType>[]): Vector<ValueType> {
+  public static multiConcat<ThisValueArrayType extends ValueArrayType>(concatVectors: Vector<ThisValueArrayType>[]): Vector<ThisValueArrayType> {
     if (concatVectors === undefined) {
       throw Error(`concatVectors must be defined`);
     }
     if (concatVectors.length === 0) {
-      return new Vector<ValueType>;
+      return new Vector<ThisValueArrayType>;
     }
     let returnVector = new Vector({ dataType: concatVectors[0].values, length: 0 });
     for (const concatVector of concatVectors) {

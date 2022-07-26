@@ -22,7 +22,8 @@ function compare(value: timestamp, target: timestamp): CompareReturn {
     return CompareReturn.ValueBeforeTarget;
   } else if (value > target) {
     return CompareReturn.ValueAfterTarget;
-  } else if (value === target) {
+  } else if (value == target) {
+    // Deliberately using == instead of === i if statement above to avoid issues comparing bigints
     return CompareReturn.ValueAtTarget;
   } else {
     throw Error(`Logical error in compare function: value = ${value}, target = ${target}`);

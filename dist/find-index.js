@@ -22,7 +22,8 @@ function compare(value, target) {
     else if (value > target) {
         return CompareReturn.ValueAfterTarget;
     }
-    else if (value === target) {
+    else if (value == target) {
+        // Deliberately using == instead of === i if statement above to avoid issues comparing bigints
         return CompareReturn.ValueAtTarget;
     }
     else {

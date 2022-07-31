@@ -11,5 +11,5 @@ export declare const StringArrayDataType: string[];
 export declare const ObjectArrayDataType: object[];
 export declare const NumberDataType: number;
 export declare const BooleanDataType: boolean;
-export declare const StringDataType = "";
+export declare const StringDataType: string;
 export declare const ObjectDataType: object;

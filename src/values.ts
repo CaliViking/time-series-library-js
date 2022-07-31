@@ -12,7 +12,7 @@ export const BooleanArrayDataType = new Uint8Array();
 export const StringArrayDataType: string[] = [];
 export const ObjectArrayDataType: object[] = [];
 
-export const NumberDataType = NaN;
+export const NumberDataType: number = null;
 export const BooleanDataType: boolean = null;
-export const StringDataType = '';
-export const ObjectDataType: object = {};
+export const StringDataType: string = null;
+export const ObjectDataType: object = null;

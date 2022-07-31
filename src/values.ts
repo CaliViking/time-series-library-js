@@ -12,7 +12,10 @@ export const BooleanArrayDataType = new Uint8Array();
 export const StringArrayDataType: string[] = [];
 export const ObjectArrayDataType: object[] = [];
 
-export const NumberDataType: number = null;
-export const BooleanDataType: boolean = null;
-export const StringDataType: string = null;
-export const ObjectDataType: object = null;
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const NumberDataType: number = 0;
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const BooleanDataType: boolean = false;
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const StringDataType: string = '';
+export const ObjectDataType: object = {};
